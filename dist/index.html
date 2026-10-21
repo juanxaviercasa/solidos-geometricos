@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Laboratorio interactivo para explorar poliedros, redes planas, fórmulas y la relación de Euler." />
+  <meta name="theme-color" content="#f7f7f2" />
+  <title>Poliedros 3D • Laboratorio Zenit</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#laboratorio">Saltar al laboratorio</a>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Inicio de Poliedros 3D">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span><strong>Poliedros</strong><b>3D</b><small>Laboratorio de geometría espacial</small></span>
+      </a>
+      <nav class="top-actions" aria-label="Recursos de aprendizaje">
+        <button class="nav-btn" data-open="theory"><span>▤</span> Teoría</button>
+        <button class="nav-btn" data-open="workshop"><span>✂</span> Taller</button>
+        <button class="nav-btn" data-open="challenge"><span>◆</span> Retos <em id="scorePill">0/5</em></button>
+        <button class="nav-btn primary" data-open="guide"><span>?</span> Guía</button>
+        <button class="icon-btn" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">☾</button>
+      </nav>
+    </header>
+
+    <section class="toolstrip" aria-label="Controles principales">
+      <div class="family-tabs" role="tablist" aria-label="Familias de poliedros">
+        <button class="family-tab active" data-family="Platónios" role="tab" aria-selected="true">Platónicos</button>
+        <button class="family-tab" data-family="Prismas" role="tab">Prismas</button>
+        <button class="family-tab" data-family="Arquimedianos" role="tab">Arquimedianos</button>
+      </div>
+      <div class="view-tools" aria-label="Modos de visualización">
+        <button class="tool-btn active" data-view="solid" title="Caras sólidas">◈ <span>Sólido</span></button>
+        <button class="tool-btn" data-view="xray" title="Caras transparentes">◇ <span>Rayos X</span></button>
+        <button class="tool-btn" data-view="wire" title="Solo aristas">⌗ <span>Aristas</span></button>
+        <button class="tool-btn" data-view="vertices" title="Resaltar vértices">∴ <span>Vértices</span></button>
+      </div>
+    </section>
+
+    <main id="laboratorio" class="workspace">
+      <aside class="catalog panel" aria-label="Galería de poliedros">
+        <div class="panel-head">
+          <div><span class="eyebrow">COLECCIÓN</span><h2>Elige un sólido</h2></div>
+          <span id="familyCount" class="count-badge">5 modelos</span>
+        </div>
+        <div id="solidList" class="solid-list"></div>
+        <div class="learning-path">
+          <span class="eyebrow">RUTA SUGERIDA</span>
+          <ol>
+            <li class="done"><span>1</span> Explora la forma</li>
+            <li><span>2</span> Cuenta C, V y A</li>
+            <li><span>3</span> Abre su red plana</li>
+            <li><span>4</span> Resuelve un reto</li>
+          </ol>
+        </div>
+      </aside>
+
+      <section class="stage" aria-label="Visualizador 3D">
+        <div class="stage-banner">
+          <div>
+            <span id="familyLabel" class="stage-kicker">SÓLIDO PLATÓNICO</span>
+            <h1 id="solidTitle">Icosaedro</h1>
+          </div>
+          <div class="status-chip"><span></span> Arrastra para girar</div>
+        </div>
+        <div id="canvasWrap" class="canvas-wrap">
+          <canvas id="polyCanvas" aria-label="Modelo tridimensional interactivo"></canvas>
+          <div class="axis-cube" aria-hidden="true"><b>Y</b><span>X</span><i>Z</i></div>
+          <div id="netLayer" class="net-layer" aria-hidden="true">
+            <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana del poliedro"></svg>
+            <div class="net-caption">RED PLANA · lista para imprimir</div>
+          </div>
+          <div class="canvas-hint" id="canvasHint">Arrastra · rueda para acercar · doble clic para centrar</div>
+        </div>
+        <div class="unfold-dock">
+          <button id="playUnfold" class="play-btn" aria-label="Reproducir despliegue">▶</button>
+          <div class="unfold-control">
+            <div class="range-labels"><span>Poliedro 3D</span><strong id="unfoldValue">0%</strong><span>Red plana</span></div>
+            <input id="unfoldRange" type="range" min="0" max="100" value="0" aria-label="Porcentaje de despliegue" />
+          </div>
+          <button id="resetView" class="round-btn" title="Centrar vista" aria-label="Centrar vista">↺</button>
+          <button id="fullscreenBtn" class="round-btn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+        </div>
+      </section>
+
+      <aside class="inspector panel" aria-label="Propiedades del poliedro">
+        <div class="inspector-title">
+          <div class="mini-glyph" id="miniGlyph">◢</div>
+          <div><span class="eyebrow">FICHA EN VIVO</span><h2 id="infoName">Icosaedro regular</h2></div>
+        </div>
+        <p id="infoIntro" class="info-intro"></p>
+        <div class="metrics" aria-label="Conteo de elementos">
+          <div><span>C</span><strong id="facesValue">20</strong><small>Caras</small></div>
+          <div><span>V</span><strong id="verticesValue">12</strong><small>Vértices</small></div>
+          <div><span>A</span><strong id="edgesValue">30</strong><small>Aristas</small></div>
+        </div>
+        <section class="euler-card">
+          <div class="section-title"><span>RELACIÓN DE EULER</span><button class="help-dot" data-tip="Para todo poliedro convexo, caras más vértices menos aristas siempre es igual a 2.">?</button></div>
+          <div class="equation"><b id="eqFaces">20</b><i>+</i><b id="eqVertices">12</b><i>−</i><b id="eqEdges">30</b><i>=</i><strong>2</strong></div>
+          <div class="proof-bar"><span>✓</span><p><b>¡Se cumple!</b> Este sólido es convexo.</p></div>
+        </section>
+        <section class="facts-grid">
+          <div><span>CARAS FORMADAS POR</span><b id="faceType">Triángulos equiláteros</b></div>
+          <div><span>EN CADA VÉRTICE</span><b id="atVertex">5 caras se encuentran</b></div>
+          <div><span>ÁNGULO DIEDRO</span><b id="dihedral">138,19°</b></div>
+          <div><span>SIMETRÍA</span><b id="symmetry">Icosaédrica</b></div>
+        </section>
+        <section class="formula-card">
+          <div class="section-title"><span>SI LA ARISTA MIDE <i>a</i></span><button id="copyFormula" class="copy-btn" title="Copiar fórmulas">Copiar</button></div>
+          <div class="formula-row"><span>Área</span><code id="areaFormula">5√3 · a²</code></div>
+          <div class="formula-row"><span>Volumen</span><code id="volumeFormula">5(3+√5)/12 · a³</code></div>
+        </section>
+        <button class="wide-btn" data-open="challenge">Pon a prueba lo aprendido <span>→</span></button>
+      </aside>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="guideDialog" class="modal guide-modal">
+    <button class="modal-close" data-close aria-label="Cerrar">×</button>
+    <div class="modal-label">GUÍA INTERACTIVA · <span id="guideStepLabel">PASO 1 DE 5</span></div>
+    <div class="progress-steps" id="guideProgress"></div>
+    <div id="guideContent"></div>
+    <footer><button id="guidePrev" class="ghost-btn">← Anterior</button><button id="guideNext" class="primary-btn">Siguiente →</button></footer>
+  </dialog>
+
+  <dialog id="theoryDialog" class="modal full-modal">
+    <header><div><span class="modal-label">BIBLIOTECA VISUAL</span><h2>Teoría de poliedros</h2></div><button class="modal-close" data-close aria-label="Cerrar">×</button></header>
+    <div class="theory-layout">
+      <nav class="theory-nav">
+        <button class="active" data-theory="basics">◈ Fundamentos</button>
+        <button data-theory="regular">⬡ Poliedros regulares</button>
+        <button data-theory="euler">Σ Relación de Euler</button>
+        <button data-theory="angles">∠ Ángulos diedros</button>
+        <button data-theory="nets">✂ Redes planas</button>
+      </nav>
+      <article id="theoryContent" class="theory-content"></article>
+    </div>
+  </dialog>
+
+  <dialog id="challengeDialog" class="modal challenge-modal">
+    <button class="modal-close" data-close aria-label="Cerrar">×</button>
+    <div class="modal-label">MODO RETO · DEDUCCIÓN</div>
+    <div id="challengeContent"></div>
+  </dialog>
+
+  <dialog id="workshopDialog" class="modal workshop-modal">
+    <button class="modal-close" data-close aria-label="Cerrar">×</button>
+    <div class="workshop-hero"><span>✂</span><div><span class="modal-label">TALLER MANOS A LA OBRA</span><h2>Construye tu propio <b id="workshopName">icosaedro</b></h2><p>Descarga la red, recorta por la línea continua y dobla por la línea punteada.</p></div></div>
+    <div class="workshop-preview"><svg id="workshopSvg" viewBox="0 0 520 320"></svg></div>
+    <div class="materials"><b>Necesitas</b><span>Cartulina A4</span><span>Tijeras</span><span>Regla</span><span>Pegamento</span></div>
+    <footer><button id="downloadSvg" class="ghost-btn">↓ Descargar SVG</button><button id="printNet" class="primary-btn">Imprimir o guardar PDF</button></footer>
+  </dialog>
+
+  <template id="solidCardTemplate">
+    <button class="solid-card">
+      <span class="solid-icon"></span>
+      <span class="solid-copy"><b></b><small></small></span>
+      <span class="card-arrow">›</span>
+    </button>
+  </template>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
