@@ -27,6 +27,7 @@
       </a>
       <nav class="top-actions" aria-label="Recursos de aprendizaje">
         <button class="nav-btn" data-open="theory"><span>▤</span> Teoría</button>
+        <button class="nav-btn" data-scroll="measureLab"><span>∑</span> Medidas</button>
         <button class="nav-btn" data-open="workshop"><span>✂</span> Taller</button>
         <button class="nav-btn" data-open="challenge"><span>◆</span> Retos <em id="scorePill">0/5</em></button>
         <button class="nav-btn primary" data-open="guide"><span>?</span> Guía</button>
@@ -72,24 +73,33 @@
             <span id="familyLabel" class="stage-kicker">SÓLIDO PLATÓNICO</span>
             <h1 id="solidTitle">Icosaedro</h1>
           </div>
-          <div class="status-chip"><span></span> Arrastra para girar</div>
+          <div class="stage-actions">
+            <div class="dimension-chip"><span id="dimensionChip">a = 4 cm</span></div>
+            <div class="view-switch" role="tablist" aria-label="Cambiar entre el sólido y su desarrollo plano">
+              <button class="active" data-space="3d" role="tab" aria-selected="true">◈ Vista 3D</button>
+              <button data-space="2d" role="tab" aria-selected="false">▱ Desarrollo 2D</button>
+            </div>
+          </div>
         </div>
         <div id="canvasWrap" class="canvas-wrap">
-          <canvas id="polyCanvas" aria-label="Modelo tridimensional interactivo"></canvas>
-          <div class="axis-cube" aria-hidden="true"><b>Y</b><span>X</span><i>Z</i></div>
-          <div id="netLayer" class="net-layer" aria-hidden="true">
-            <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana del poliedro"></svg>
-            <div class="net-caption">RED PLANA · lista para imprimir</div>
+          <div id="view3d" class="space-view active">
+            <canvas id="polyCanvas" aria-label="Modelo tridimensional interactivo"></canvas>
+            <div class="axis-cube" aria-hidden="true"><b>Y</b><span>X</span><i>Z</i></div>
+            <div class="edge-callout" id="edgeCallout"><span></span><b id="edgeCalloutText">a = 4 cm</b></div>
+            <div class="canvas-hint">Arrastra · rueda para acercar · doble clic para centrar</div>
           </div>
-          <div class="canvas-hint" id="canvasHint">Arrastra · rueda para acercar · doble clic para centrar</div>
+          <div id="view2d" class="space-view net-studio">
+            <div class="net-toolbar">
+              <div><span class="eyebrow">DESARROLLO PLANO</span><b id="netTitle">Red del icosaedro</b></div>
+              <div class="net-legend"><span><i class="cut-line"></i>Cortar</span><span><i class="fold-line"></i>Doblar</span></div>
+            </div>
+            <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana acotada del poliedro"></svg>
+            <div class="net-measure"><span>Longitud de cada arista</span><strong id="netEdgeValue">4 cm</strong><small>Las caras conservan esta medida al plegarse.</small></div>
+          </div>
         </div>
-        <div class="unfold-dock">
-          <button id="playUnfold" class="play-btn" aria-label="Reproducir despliegue">▶</button>
-          <div class="unfold-control">
-            <div class="range-labels"><span>Poliedro 3D</span><strong id="unfoldValue">0%</strong><span>Red plana</span></div>
-            <input id="unfoldRange" type="range" min="0" max="100" value="0" aria-label="Porcentaje de despliegue" />
-          </div>
-          <button id="resetView" class="round-btn" title="Centrar vista" aria-label="Centrar vista">↺</button>
+        <div class="stage-dock">
+          <div id="controls3d" class="dock-group active"><span>Explora el sólido desde cualquier ángulo</span><button id="resetView" class="round-btn" title="Centrar vista" aria-label="Centrar vista">↺</button><button id="autoRotate" class="round-btn" title="Rotación automática" aria-label="Rotación automática">▶</button></div>
+          <div id="controls2d" class="dock-group"><span>Observa cómo se conectan todas sus caras</span><button class="ghost-btn" data-open="workshop">Imprimir red</button></div>
           <button id="fullscreenBtn" class="round-btn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
         </div>
       </section>
@@ -116,10 +126,17 @@
           <div><span>ÁNGULO DIEDRO</span><b id="dihedral">138,19°</b></div>
           <div><span>SIMETRÍA</span><b id="symmetry">Icosaédrica</b></div>
         </section>
-        <section class="formula-card">
-          <div class="section-title"><span>SI LA ARISTA MIDE <i>a</i></span><button id="copyFormula" class="copy-btn" title="Copiar fórmulas">Copiar</button></div>
-          <div class="formula-row"><span>Área</span><code id="areaFormula">5√3 · a²</code></div>
-          <div class="formula-row"><span>Volumen</span><code id="volumeFormula">5(3+√5)/12 · a³</code></div>
+        <section id="measureLab" class="measure-lab">
+          <div class="section-title"><span>LABORATORIO DE MEDIDAS</span><button id="copyFormula" class="copy-btn" title="Copiar resultados">Copiar</button></div>
+          <p>Cambia la arista y observa cómo crecen las medidas.</p>
+          <div class="measure-inputs">
+            <label><span>Arista <i>a</i></span><input id="edgeInput" type="number" min="0.1" max="1000" step="0.1" value="4" inputmode="decimal"></label>
+            <label id="heightField"><span>Altura <i>h</i></span><input id="heightInput" type="number" min="0.1" max="1000" step="0.1" value="6" inputmode="decimal"></label>
+            <label><span>Unidad</span><select id="unitSelect"><option>mm</option><option selected>cm</option><option>m</option></select></label>
+          </div>
+          <div class="growth-note"><span id="growthBadge">×2 en a</span><p>El área cambia con <b>a²</b> y el volumen con <b>a³</b>.</p></div>
+          <div id="resultsGrid" class="results-grid"></div>
+          <details class="substitution" open><summary>Sustitución paso a paso</summary><div id="substitutionSteps"></div></details>
         </section>
         <button class="wide-btn" data-open="challenge">Pon a prueba lo aprendido <span>→</span></button>
       </aside>
