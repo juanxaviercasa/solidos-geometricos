@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Laboratorio interactivo para explorar poliedros, redes planas, fórmulas y la relación de Euler." />
   <meta name="theme-color" content="#f7f7f2" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 5 58 54H6Z' fill='%235b4fe8'/%3E%3Cpath d='M32 18 46 46H18Z' fill='%23c6ff4a'/%3E%3C/svg%3E" />
   <title>Poliedros 3D • Laboratorio Zenit</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="./styles.css" />
@@ -93,13 +94,22 @@
               <div><span class="eyebrow">DESARROLLO PLANO</span><b id="netTitle">Red del icosaedro</b></div>
               <div class="net-legend"><span><i class="cut-line"></i>Cortar</span><span><i class="fold-line"></i>Doblar</span></div>
             </div>
-            <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana acotada del poliedro"></svg>
+            <div class="fold-stage">
+              <canvas id="foldCanvas" aria-label="Animación de plegado entre la red plana y el sólido"></canvas>
+              <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana acotada del poliedro"></svg>
+              <div id="foldStatus" class="fold-status">Red completamente plana</div>
+            </div>
             <div class="net-measure"><span>Longitud de cada arista</span><strong id="netEdgeValue">4 cm</strong><small>Las caras conservan esta medida al plegarse.</small></div>
           </div>
         </div>
         <div class="stage-dock">
           <div id="controls3d" class="dock-group active"><span>Explora el sólido desde cualquier ángulo</span><button id="resetView" class="round-btn" title="Centrar vista" aria-label="Centrar vista">↺</button><button id="autoRotate" class="round-btn" title="Rotación automática" aria-label="Rotación automática">▶</button></div>
-          <div id="controls2d" class="dock-group"><span>Observa cómo se conectan todas sus caras</span><button class="ghost-btn" data-open="workshop">Imprimir red</button></div>
+          <div id="controls2d" class="dock-group fold-controls">
+            <button id="foldPlay" class="play-btn" aria-label="Reproducir plegado">▶</button>
+            <div class="fold-timeline"><div><span id="foldAction">Plegar 2D → 3D</span><strong id="foldPercent">0%</strong></div><input id="foldRange" type="range" min="0" max="100" value="0" aria-label="Progreso del plegado"></div>
+            <button id="foldReverse" class="ghost-btn" title="Invertir sentido">⇄ Invertir</button>
+            <button class="ghost-btn" data-open="workshop">Imprimir</button>
+          </div>
           <button id="fullscreenBtn" class="round-btn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
         </div>
       </section>
