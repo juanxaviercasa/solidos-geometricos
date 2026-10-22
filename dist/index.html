@@ -99,6 +99,19 @@
             <div class="fold-stage">
               <canvas id="foldCanvas" aria-label="Animación de plegado entre la red plana y el sólido"></canvas>
               <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana acotada del poliedro"></svg>
+              <div class="net-feature-bar" aria-label="Capas de información de la red">
+                <button data-net-feature="faces"><b id="netFacesCount">20</b><span>Caras</span></button>
+                <button data-net-feature="vertices"><b id="netVerticesCount">12</b><span>Vértices</span></button>
+                <button class="active" data-net-feature="edges"><b id="netEdgesCount">30</b><span>Aristas</span></button>
+                <button class="active" data-net-feature="measure"><b>a</b><span>Medida</span></button>
+              </div>
+              <div class="net-nav-controls" aria-label="Mover y ampliar el desarrollo plano">
+                <button id="netZoomOut" title="Reducir" aria-label="Reducir">−</button>
+                <button id="netRotateLeft" title="Rotar a la izquierda" aria-label="Rotar a la izquierda">↶</button>
+                <button id="netReset" title="Restablecer vista" aria-label="Restablecer vista">⌂</button>
+                <button id="netRotateRight" title="Rotar a la derecha" aria-label="Rotar a la derecha">↷</button>
+                <button id="netZoomIn" title="Ampliar" aria-label="Ampliar">+</button>
+              </div>
               <div class="fold-orbit-hint">Arrastra para girar · rueda o pellizca para acercar</div>
               <div id="foldStatus" class="fold-status">Red completamente plana</div>
             </div>
