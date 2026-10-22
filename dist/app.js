@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
 import { FoldingNet } from './folding.js';
+import katex from 'katex';
 
 const PHI=(1+Math.sqrt(5))/2;
 const solids={
@@ -18,14 +19,14 @@ const solids={
 };
 
 const familyOrder={Platónios:['ico','dode','cube','octa','tetra'],Prismas:['triPrism','hexPrism'],Arquimedianos:['cuboct','truncOct','truncCube']};
-let currentKey='ico',viewMode='solid',spaceMode='3d',autoRotate=false,guideStep=0,challengeStep=0,score=0,answered=false;
+let currentKey='ico',viewMode='solid',spaceMode='3d',autoRotate=false,guideStep=0,challengeStep=0,score=0,answered=false,hasSelectedSolid=false;
 let edgeLength=4,prismHeight=6,currentUnit='cm';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
 const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(34,1,.1,100); camera.position.set(5.2,3.7,6.4);
+const camera=new THREE.PerspectiveCamera(34,1,.1,100); camera.position.set(4.9,3.4,6.2);
 const renderer=new THREE.WebGLRenderer({canvas:$('#polyCanvas'),antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true; controls.dampingFactor=.06; controls.minDistance=3.7; controls.maxDistance=11; controls.target.set(0,.25,0);
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true; controls.dampingFactor=.06; controls.minDistance=3; controls.maxDistance=12; controls.target.set(0,.18,0);
 scene.add(new THREE.HemisphereLight(0xffffff,0x697383,2.5));
 const keyLight=new THREE.DirectionalLight(0xffffff,4); keyLight.position.set(4,7,6); keyLight.castShadow=true; scene.add(keyLight);
 const rim=new THREE.DirectionalLight(0x7368ff,2); rim.position.set(-5,1,-4); scene.add(rim);
@@ -59,7 +60,7 @@ function buildModel(){
   const edgeMat=new THREE.LineBasicMaterial({color:0x252932,transparent:true,opacity:.72}); const edges=new THREE.LineSegments(new THREE.EdgesGeometry(g,18),edgeMat);edges.name='edges';modelGroup.add(edges);
   const pos=g.attributes.position; const unique=new Map(); for(let i=0;i<pos.count;i++){const v=new THREE.Vector3().fromBufferAttribute(pos,i);const k=v.toArray().map(n=>n.toFixed(3)).join(',');unique.set(k,v)}
   const dotGeo=new THREE.SphereGeometry(.065,12,8); const dotMat=new THREE.MeshBasicMaterial({color:0xc6ff4a}); const dots=new THREE.Group(); dots.name='dots'; for(const v of unique.values()){const dot=new THREE.Mesh(dotGeo,dotMat);dot.position.copy(v);dots.add(dot)} modelGroup.add(dots);
-  const box=new THREE.Box3().setFromObject(modelGroup),size=box.getSize(new THREE.Vector3());const max=Math.max(size.x,size.y,size.z);modelGroup.userData.baseScale=3.5/max;modelGroup.scale.setScalar(modelGroup.userData.baseScale);modelGroup.rotation.set(.12,.35,0);updateViewMode();
+  const box=new THREE.Box3().setFromObject(modelGroup),size=box.getSize(new THREE.Vector3());const max=Math.max(size.x,size.y,size.z);modelGroup.userData.baseScale=3.9/max;modelGroup.scale.setScalar(modelGroup.userData.baseScale);modelGroup.rotation.set(.12,.35,0);updateViewMode();
 }
 function updateViewMode(){const s=modelGroup.getObjectByName('surface'),e=modelGroup.getObjectByName('edges'),v=modelGroup.getObjectByName('dots');if(!s)return;s.visible=viewMode!=='wire';s.material.opacity=viewMode==='xray'?.22:1;s.material.depthWrite=viewMode!=='xray';e.visible=true;e.material.opacity=viewMode==='xray'?1:viewMode==='wire'?1:.68;v.visible=viewMode==='vertices';}
 function resize(){const wrap=$('#canvasWrap'),w=wrap.clientWidth,h=wrap.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
@@ -67,7 +68,7 @@ new ResizeObserver(resize).observe($('#canvasWrap'));
 function animate(){requestAnimationFrame(animate);controls.update();if(autoRotate&&spaceMode==='3d')modelGroup.rotation.y+=.008;renderer.render(scene,camera)}requestAnimationFrame(animate);
 
 function renderCatalog(family){const list=$('#solidList');list.innerHTML='';const keys=familyOrder[family];$('#familyCount').textContent=`${keys.length} modelos`;keys.forEach(key=>{const d=solids[key],node=$('#solidCardTemplate').content.firstElementChild.cloneNode(true);node.dataset.key=key;node.querySelector('.solid-icon').textContent=d.glyph;node.querySelector('b').textContent=d.name;node.querySelector('small').textContent=`${d.faces} caras · ${d.edges} aristas`;node.classList.toggle('active',key===currentKey);node.addEventListener('click',()=>selectSolid(key));list.append(node)})}
-function selectSolid(key){currentKey=key;const d=solids[key];if(!familyOrder[d.family].includes(key))return;$$('.family-tab').forEach(b=>{b.classList.toggle('active',b.dataset.family===d.family);b.setAttribute('aria-selected',b.dataset.family===d.family)});renderCatalog(d.family);$('#familyLabel').textContent=d.type.toUpperCase();$('#solidTitle').textContent=d.name;$('#infoName').textContent=d.full;$('#infoIntro').textContent=d.intro;$('#miniGlyph').textContent=d.glyph;$('#facesValue').textContent=$('#eqFaces').textContent=d.faces;$('#verticesValue').textContent=$('#eqVertices').textContent=d.vertices;$('#edgesValue').textContent=$('#eqEdges').textContent=d.edges;$('#faceType').textContent=d.face;$('#atVertex').textContent=d.atVertex;$('#dihedral').textContent=d.dihedral;$('#symmetry').textContent=d.symmetry;$('#workshopName').textContent=d.name.toLowerCase();$('#netTitle').textContent=`Red del ${d.name.toLowerCase()}`;$('#heightField').style.display=d.family==='Prismas'?'block':'none';buildModel();buildFoldingNet();updateMeasurements();showToast(`${d.name}: red conectada y plegado geométrico listos`)}
+function selectSolid(key){currentKey=key;const d=solids[key];if(!familyOrder[d.family].includes(key))return;$$('.family-tab').forEach(b=>{b.classList.toggle('active',b.dataset.family===d.family);b.setAttribute('aria-selected',b.dataset.family===d.family)});renderCatalog(d.family);$('#familyLabel').textContent=d.type.toUpperCase();$('#solidTitle').textContent=d.name;$('#infoName').textContent=d.full;$('#infoIntro').textContent=d.intro;$('#miniGlyph').textContent=d.glyph;$('#facesValue').textContent=$('#eqFaces').textContent=d.faces;$('#verticesValue').textContent=$('#eqVertices').textContent=d.vertices;$('#edgesValue').textContent=$('#eqEdges').textContent=d.edges;$('#faceType').textContent=d.face;$('#atVertex').textContent=d.atVertex;$('#dihedral').textContent=d.dihedral;$('#symmetry').textContent=d.symmetry;$('#workshopName').textContent=d.name.toLowerCase();$('#netTitle').textContent=`Red del ${d.name.toLowerCase()}`;$('#heightField').style.display=d.family==='Prismas'?'block':'none';buildModel();buildFoldingNet();updateMeasurements();if(hasSelectedSolid)showToast(`${d.name}: red conectada y plegado geométrico listos`);hasSelectedSolid=true}
 
 function buildFoldingNet(){const d=solids[currentKey],g=geometryFor(d.geometry),measure=`${format(edgeLength)} ${currentUnit}`,result=foldingNet.setGeometry(g,d.color,measure);g.dispose();if(result.overlapScore>0)console.warn(`La búsqueda de red para ${d.name} conservó ${result.overlapScore} solapamientos.`);renderNet()}
 
@@ -88,6 +89,19 @@ function renderNet(){const measure=`${format(edgeLength)} ${currentUnit}`,m=fold
 function switchSpace(mode){spaceMode=mode;$$('[data-space]').forEach(b=>{const active=b.dataset.space===mode;b.classList.toggle('active',active);b.setAttribute('aria-selected',active)});$('#view3d').classList.toggle('active',mode==='3d');$('#view2d').classList.toggle('active',mode==='2d');$('#controls3d').classList.toggle('active',mode==='3d');$('#controls2d').classList.toggle('active',mode==='2d');if(mode==='2d')renderNet();resize()}
 
 function format(n){return new Intl.NumberFormat('es-PE',{maximumFractionDigits:2}).format(n)}
+const latexFormulas={
+  cube:['a^2','4a^2','6a^2','a\\sqrt{2}','a\\sqrt{3}','a^3'],
+  tetra:['\\frac{\\sqrt{3}}{4}a^2','\\sqrt{3}a^2','\\sqrt{\\frac{2}{3}}a','\\frac{\\sqrt{6}}{4}a','\\frac{\\sqrt{2}}{12}a^3'],
+  octa:['\\frac{\\sqrt{3}}{4}a^2','2\\sqrt{3}a^2','a\\sqrt{2}','\\frac{a}{\\sqrt{2}}','\\frac{\\sqrt{2}}{3}a^3'],
+  dode:['\\frac{1}{4}\\sqrt{25+10\\sqrt{5}}a^2','3\\sqrt{25+10\\sqrt{5}}a^2','\\varphi a','\\frac{\\sqrt{3}(1+\\sqrt{5})}{4}a','\\frac{15+7\\sqrt{5}}{4}a^3'],
+  ico:['\\frac{\\sqrt{3}}{4}a^2','5\\sqrt{3}a^2','\\frac{\\sqrt{10+2\\sqrt{5}}}{4}a','\\frac{5(3+\\sqrt{5})}{12}a^3'],
+  triPrism:['\\frac{\\sqrt{3}}{4}a^2','3ah','2A_b+3ah','\\sqrt{a^2+h^2}','A_bh'],
+  hexPrism:['\\frac{3\\sqrt{3}}{2}a^2','6ah','2A_b+6ah','2a','A_bh'],
+  cuboct:['a^2','\\frac{\\sqrt{3}}{4}a^2','(6+2\\sqrt{3})a^2','a','\\frac{5\\sqrt{2}}{3}a^3'],
+  truncOct:['a^2','\\frac{3\\sqrt{3}}{2}a^2','6(1+2\\sqrt{3})a^2','\\frac{\\sqrt{10}}{2}a','8\\sqrt{2}a^3'],
+  truncCube:['\\frac{\\sqrt{3}}{4}a^2','2(1+\\sqrt{2})a^2','2(6+6\\sqrt{2}+\\sqrt{3})a^2','\\frac{\\sqrt{7+4\\sqrt{2}}}{2}a','\\frac{21+14\\sqrt{2}}{3}a^3']
+};
+function renderMath(){const formulas=latexFormulas[currentKey]||latexFormulas.cube;$$('#resultsGrid .math-formula').forEach((el,i)=>katex.render(formulas[i]||'',el,{throwOnError:false,displayMode:true,strict:false}))}
 function calculate(key,a,h){
   const sq=a*a,cu=sq*a,tri=Math.sqrt(3)/4*sq;
   const table={
@@ -107,14 +121,14 @@ function calculate(key,a,h){
 function updateMeasurements(){
   edgeLength=Math.max(.1,Number($('#edgeInput').value)||.1);prismHeight=Math.max(.1,Number($('#heightInput').value)||.1);currentUnit=$('#unitSelect').value;
   const data=calculate(currentKey,edgeLength,prismHeight),unit=p=>p===3?`${currentUnit}³`:p===2?`${currentUnit}²`:currentUnit;
-  $('#resultsGrid').innerHTML=data.items.map(x=>`<div class="result-card"><span>${x.label.toUpperCase()}</span><strong>${format(x.value)} ${unit(x.power)}</strong><code>${x.formula}</code></div>`).join('');
+  $('#resultsGrid').innerHTML=data.items.map(x=>`<div class="result-card"><span>${x.label.toUpperCase()}</span><strong>${format(x.value)} <small>${unit(x.power)}</small></strong><div class="math-formula" aria-label="Fórmula: ${x.formula}"></div></div>`).join('');
   $('#substitutionSteps').innerHTML=data.steps.map((s,i)=>`<p><b>${i+1}.</b> ${s} ${i===data.steps.length-1?unit(data.items.at(-1).power):''}</p>`).join('');
-  $('#growthBadge').textContent=`a = ${format(edgeLength)} ${currentUnit}`;renderNet();
+  renderMath();$('#growthBadge').textContent=`a = ${format(edgeLength)} ${currentUnit}`;renderNet();
 }
 
 $$('.family-tab').forEach(b=>b.addEventListener('click',()=>{const family=b.dataset.family;$$('.family-tab').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-selected',x===b)});currentKey=familyOrder[family][0];renderCatalog(family);selectSolid(currentKey)}));
 $$('.tool-btn').forEach(b=>b.addEventListener('click',()=>{viewMode=b.dataset.view;$$('.tool-btn').forEach(x=>x.classList.toggle('active',x===b));updateViewMode()}));
-$$('[data-space]').forEach(b=>b.addEventListener('click',()=>switchSpace(b.dataset.space)));$('#resetView').addEventListener('click',()=>{camera.position.set(5.2,3.7,6.4);controls.target.set(0,.25,0);controls.update();modelGroup.rotation.set(.12,.35,0)});renderer.domElement.addEventListener('dblclick',()=>$('#resetView').click());$('#autoRotate').addEventListener('click',()=>{autoRotate=!autoRotate;$('#autoRotate').textContent=autoRotate?'Ⅱ':'▶';showToast(autoRotate?'Rotación automática activada':'Rotación pausada')});
+$$('[data-space]').forEach(b=>b.addEventListener('click',()=>switchSpace(b.dataset.space)));$('#resetView').addEventListener('click',()=>{camera.position.set(4.9,3.4,6.2);controls.target.set(0,.18,0);controls.update();modelGroup.rotation.set(.12,.35,0)});renderer.domElement.addEventListener('dblclick',()=>$('#resetView').click());$('#autoRotate').addEventListener('click',()=>{autoRotate=!autoRotate;$('#autoRotate').textContent=autoRotate?'Ⅱ':'▶';showToast(autoRotate?'Rotación automática activada':'Rotación pausada')});
 $('#foldPlay').addEventListener('click',()=>{foldingNet.toggle();$('#foldPlay').textContent=foldingNet.playing?'Ⅱ':'▶'});$('#foldReverse').addEventListener('click',()=>{foldingNet.reverse();$('#foldPlay').textContent='Ⅱ'});$('#foldRange').addEventListener('input',e=>{foldingNet.playing=false;foldingNet.update(Number(e.target.value)/100);$('#foldPlay').textContent='▶'});
 $('#fullscreenBtn').addEventListener('click',()=>{$('#laboratorio').requestFullscreen?.()});
 $('#themeToggle').addEventListener('click',()=>{document.body.classList.toggle('dark');$('#themeToggle').textContent=document.body.classList.contains('dark')?'☀':'☾'});

@@ -8,12 +8,14 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 5 58 54H6Z' fill='%235b4fe8'/%3E%3Cpath d='M32 18 46 46H18Z' fill='%23c6ff4a'/%3E%3C/svg%3E" />
   <title>Poliedros 3D • Laboratorio Zenit</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
   <link rel="stylesheet" href="./styles.css" />
   <script type="importmap">
     {
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+        "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.mjs"
       }
     }
   </script>
@@ -97,6 +99,7 @@
             <div class="fold-stage">
               <canvas id="foldCanvas" aria-label="Animación de plegado entre la red plana y el sólido"></canvas>
               <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana acotada del poliedro"></svg>
+              <div class="fold-orbit-hint">Arrastra para girar · rueda o pellizca para acercar</div>
               <div id="foldStatus" class="fold-status">Red completamente plana</div>
             </div>
             <div class="net-measure"><span>Longitud de cada arista</span><strong id="netEdgeValue">4 cm</strong><small>Las caras conservan esta medida al plegarse.</small></div>
