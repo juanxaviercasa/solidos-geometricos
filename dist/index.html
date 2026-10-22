@@ -107,15 +107,16 @@
               </div>
               <div class="net-nav-controls" aria-label="Mover y ampliar el desarrollo plano">
                 <button id="netZoomOut" title="Reducir" aria-label="Reducir">−</button>
-                <button id="netRotateLeft" title="Rotar a la izquierda" aria-label="Rotar a la izquierda">↶</button>
-                <button id="netReset" title="Restablecer vista" aria-label="Restablecer vista">⌂</button>
-                <button id="netRotateRight" title="Rotar a la derecha" aria-label="Rotar a la derecha">↷</button>
+                <button id="netMoveMode" class="interaction-mode active" title="Arrastrar para mover" aria-label="Modo mover" aria-pressed="true"><span>✋</span> Mover</button>
+                <button id="netRotateMode" class="interaction-mode" title="Arrastrar para girar" aria-label="Modo girar" aria-pressed="false"><span>↻</span> Girar</button>
+                <button id="netReset" title="Centrar desarrollo" aria-label="Centrar desarrollo">⌂</button>
                 <button id="netZoomIn" title="Ampliar" aria-label="Ampliar">+</button>
               </div>
-              <div class="fold-orbit-hint">Arrastra para girar · rueda o pellizca para acercar</div>
+              <div id="netMeasureCallout" class="net-measure-callout"><span></span><div><small>ARISTA SEÑALADA</small><strong id="netMeasureCalloutValue">a = 4 cm</strong></div></div>
+              <div class="fold-orbit-hint">Elige Mover o Girar y arrastra · rueda o pellizca para acercar</div>
               <div id="foldStatus" class="fold-status">Red completamente plana</div>
             </div>
-            <div class="net-measure"><span>Longitud de cada arista</span><strong id="netEdgeValue">4 cm</strong><small>Las caras conservan esta medida al plegarse.</small></div>
+            <div class="net-measure"><span>Arista destacada</span><strong id="netEdgeValue">4 cm</strong><small>La línea coral señala una arista; todas conservan esta medida al plegarse.</small></div>
           </div>
         </div>
         <div class="stage-dock">
