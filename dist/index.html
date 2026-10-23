@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Laboratorio interactivo para explorar poliedros, redes planas, fórmulas y la relación de Euler." />
+  <meta name="description" content="Sólidos geométricos Zenit: laboratorios interactivos de poliedros, cuerpos redondos y ángulos en el espacio, con modelos 3D, secciones y fórmulas." />
   <meta name="theme-color" content="#f7f7f2" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 5 58 54H6Z' fill='%235b4fe8'/%3E%3Cpath d='M32 18 46 46H18Z' fill='%23c6ff4a'/%3E%3C/svg%3E" />
-  <title>Poliedros 3D • Laboratorio Zenit</title>
+  <title>Sólidos geométricos • Zenit</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./revolution-editor.css" />
+  <link rel="stylesheet" href="./canvas-presentation.css" />
+  <link rel="stylesheet" href="./navigation-responsive.css" />
+  <link rel="stylesheet" href="./branding.css" />
   <script type="importmap">
     {
       "imports": {
@@ -22,22 +26,27 @@
 </head>
 <body>
   <a class="skip-link" href="#laboratorio">Saltar al laboratorio</a>
-  <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#" aria-label="Inicio de Poliedros 3D">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span><strong>Poliedros</strong><b>3D</b><small>Laboratorio de geometría espacial</small></span>
+    <header class="topbar site-header">
+      <a class="brand" href="#inicio" aria-label="Inicio de Sólidos geométricos">
+        <svg class="brand-symbol" viewBox="0 0 48 48" aria-hidden="true"><path d="M7 39 23 7 40 35Z" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/><path d="m7 39 19-12 14 8M23 7l3 20" fill="none" stroke="currentColor" stroke-width="2"/><path d="m10 35 13-8 2-14" fill="none" stroke="var(--lime)" stroke-width="3"/><circle cx="39" cy="9" r="4" fill="var(--coral)"/></svg>
+        <span><strong>Sólidos geométricos</strong><small>Explora, construye y comprende</small></span>
       </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mainNavigation siteResources"><span aria-hidden="true">☰</span> <span class="menu-toggle-label">Menú</span></button>
+      <nav id="mainNavigation" class="module-navigation" aria-label="Módulos de sólidos geométricos"><a href="#laboratorio" data-module="laboratorio">Poliedros</a><a href="#redondos" data-module="redondos">Cuerpos redondos</a><a href="#espacio" data-module="espacio">Ángulos en el espacio</a></nav>
+      <details id="siteResources" class="site-resources"><summary>Recursos</summary>
       <nav class="top-actions" aria-label="Recursos de aprendizaje">
-        <button class="nav-btn" data-open="theory"><span>▤</span> Teoría</button>
-        <button class="nav-btn" data-scroll="measureLab"><span>∑</span> Medidas</button>
-        <button class="nav-btn" data-open="workshop"><span>✂</span> Taller</button>
-        <button class="nav-btn" data-open="challenge"><span>◆</span> Retos <em id="scorePill">0/5</em></button>
-        <button class="nav-btn primary" data-open="guide"><span>?</span> Guía</button>
+        <a class="nav-btn" data-open="theory" href="#teoria/fundamentos"><span>▤</span> Teoría</a>
+        <a class="nav-btn" data-open="measure" href="#medidas"><span>∑</span> Medidas</a>
+        <a class="nav-btn" href="#glosario">Glosario</a>
+        <a class="nav-btn" data-open="workshop" href="#imprimir"><span>✂</span> Taller</a>
+        <a class="nav-btn" data-open="challenge" href="#retos"><span>◆</span> Retos <em id="scorePill">0/5</em></a>
+        <a class="nav-btn primary" data-open="guide" href="#guia"><span>?</span> Guía</a>
         <button class="icon-btn" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">☾</button>
+        <a class="icon-btn appearance-link" href="#apariencia" aria-label="Configurar apariencia y tamaño de letra" title="Apariencia y tamaño de letra">Aa</a>
       </nav>
+      </details>
     </header>
-
+  <div class="app-shell">
     <section class="toolstrip" aria-label="Controles principales">
       <div class="family-tabs" role="tablist" aria-label="Familias de poliedros">
         <button class="family-tab active" data-family="Platónios" role="tab" aria-selected="true">Platónicos</button>
@@ -55,10 +64,11 @@
     <main id="laboratorio" class="workspace">
       <aside class="catalog panel" aria-label="Galería de poliedros">
         <div class="panel-head">
-          <div><span class="eyebrow">COLECCIÓN</span><h2>Elige un sólido</h2></div>
-          <span id="familyCount" class="count-badge">5 modelos</span>
+          <div><span class="eyebrow">COLECCIÓN</span><h2>Elige un sólido</h2><small id="familyCount">5 modelos</small></div>
+          <p id="familyExplanation" class="catalog-explanation"></p>
         </div>
         <div id="solidList" class="solid-list"></div>
+        <form id="prismConfig" class="prism-config" hidden><label for="prismSides">Lados de cada base · n</label><div class="quick-answer-row"><input id="prismSides" type="number" min="3" max="24" step="1" value="9" required><button class="primary-btn">Crear</button></div><p>De 3 a 24 lados. Cambia la altura en Medidas. Al aumentar n manteniendo fijo el radio, la base se aproxima a un círculo. El cilindro tiene superficie curva y no es un poliedro.</p><p id="prismConfigError" role="status"></p></form>
         <div class="learning-path">
           <span class="eyebrow">RUTA SUGERIDA</span>
           <ol>
@@ -77,6 +87,7 @@
             <h1 id="solidTitle">Icosaedro</h1>
           </div>
           <div class="stage-actions">
+            <button id="panelToggle" class="panel-toggle" aria-expanded="true" aria-controls="solidPanel">Ocultar panel</button>
             <div class="dimension-chip"><span id="dimensionChip">a = 4 cm</span></div>
             <div class="view-switch" role="tablist" aria-label="Cambiar entre el sólido y su desarrollo plano">
               <button class="active" data-space="3d" role="tab" aria-selected="true">◈ Vista 3D</button>
@@ -86,52 +97,66 @@
         </div>
         <div id="canvasWrap" class="canvas-wrap">
           <div id="view3d" class="space-view active">
-            <canvas id="polyCanvas" aria-label="Modelo tridimensional interactivo"></canvas>
-            <div class="axis-cube" aria-hidden="true"><b>Y</b><span>X</span><i>Z</i></div>
-            <div class="edge-callout" id="edgeCallout"><span></span><b id="edgeCalloutText">a = 4 cm</b></div>
-            <div class="canvas-hint">Arrastra · rueda para acercar · doble clic para centrar</div>
+            <aside id="solidPanel" class="solid-sidebar" aria-label="Controles de la vista 3D">
+              <span class="eyebrow">VISTA 3D</span>
+              <div id="controls3d" class="solid-controls active">
+                <button id="resetView" class="round-btn" title="Centrar vista" aria-label="Centrar vista">↺</button>
+                <button id="solidZoomOut" class="round-btn" title="Reducir figura" aria-label="Reducir figura">−</button>
+                <button id="solidZoomIn" class="round-btn" title="Ampliar figura" aria-label="Ampliar figura">+</button>
+                <button id="autoRotate" class="round-btn" title="Iniciar rotación automática" aria-label="Iniciar rotación automática" aria-pressed="false">▶</button>
+                <button id="fullscreenBtn" data-fullscreen class="round-btn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+              </div>
+              <div class="edge-callout" id="edgeCallout"><span></span><b id="edgeCalloutText">a = 4 cm</b></div>
+              <div class="geometry-insights" aria-label="Exploración geométrica">
+                <button data-insight="diagonals" aria-pressed="false"><span>Diagonales espaciales</span><b data-spatial-count>36</b></button>
+                <button data-insight="dihedral" aria-pressed="false"><span>Ángulo diedro interior</span><b data-dihedral-value>138,19°</b></button>
+                <button data-insight="distance" aria-pressed="false"><span data-distance-label>Caras opuestas</span><b data-face-distance></b></button>
+                <button data-insight="vertexAngle" aria-pressed="false"><span id="vertexAngleLabel">Ángulo poliedro</span><b id="vertexAngleValue"></b></button>
+              </div>
+            </aside>
+            <div id="solidViewport" class="solid-viewport"><canvas id="polyCanvas" aria-label="Modelo tridimensional interactivo"></canvas></div>
+            <div id="solidSecondary" class="solid-secondary"><div class="length-explorer"><label for="lengthMetric">Otras longitudes</label><select id="lengthMetric"><option value="diameter">Máxima entre vértices</option><option value="faceDiagonal">Diagonal de una cara</option><option value="circumradius">Centro a vértice · R</option><option value="inradius">Centro a cara · r</option><option value="midradius">Centro a arista · ρ</option></select><button data-insight="length" aria-pressed="false"><span id="lengthMetricValue"></span><span>Mostrar / ocultar</span></button></div><details class="dual-explorer"><summary>Conjugado o dual del sólido</summary><p>Intercambia caras y vértices. El modelo naranja es el dual polar, reducido para quedar dentro.</p><label><input id="showDual" type="checkbox"> Mostrar dual inscrito</label><p id="dualDescription"></p><a href="#teoria/conjugados">Teoría y gráfico del conjugado →</a><br><a href="#teoria/polares">Diedro y triedro polar →</a></details><p class="canvas-hint">Arrastra para girar. Rueda o pellizco para acercar. Doble clic para centrar.</p></div>
           </div>
           <div id="view2d" class="space-view net-studio">
+            <aside id="netPanel" class="net-sidebar" aria-label="Herramientas e información del desarrollo">
             <div class="net-toolbar">
               <div><span class="eyebrow">DESARROLLO PLANO</span><b id="netTitle">Red del icosaedro</b></div>
               <div class="net-legend"><span><i class="cut-line"></i>Cortar</span><span><i class="fold-line"></i>Doblar</span></div>
             </div>
-            <div class="fold-stage">
-              <canvas id="foldCanvas" aria-label="Animación de plegado entre la red plana y el sólido"></canvas>
-              <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana acotada del poliedro"></svg>
               <div class="net-feature-bar" aria-label="Capas de información de la red">
                 <button data-net-feature="faces"><b id="netFacesCount">20</b><span>Caras</span></button>
                 <button data-net-feature="vertices"><b id="netVerticesCount">12</b><span>Vértices</span></button>
                 <button class="active" data-net-feature="edges"><b id="netEdgesCount">30</b><span>Aristas</span></button>
-                <button class="active" data-net-feature="measure"><b>a</b><span>Medida</span></button>
+                <button data-insight="diagonals" aria-pressed="false" title="Explorar las diagonales espaciales en 3D"><b data-spatial-count>36</b><span>Diagonales</span></button>
               </div>
+              <div class="geometry-insights net-insights" aria-label="Medidas que se exploran en 3D"><button data-insight="dihedral" aria-pressed="false"><span>Diedro interior</span><b data-dihedral-value></b></button><button data-insight="distance" aria-pressed="false"><span data-distance-label>Caras opuestas</span><b data-face-distance></b></button></div>
               <div class="net-nav-controls" aria-label="Mover y ampliar el desarrollo plano">
                 <button id="netZoomOut" title="Reducir" aria-label="Reducir">−</button>
                 <button id="netMoveMode" class="interaction-mode active" title="Arrastrar para mover" aria-label="Modo mover" aria-pressed="true"><span>✋</span> Mover</button>
                 <button id="netRotateMode" class="interaction-mode" title="Arrastrar para girar" aria-label="Modo girar" aria-pressed="false"><span>↻</span> Girar</button>
-                <button id="netReset" title="Centrar desarrollo" aria-label="Centrar desarrollo">⌂</button>
+                <button id="netReset" title="Centrar desarrollo" aria-label="Centrar desarrollo">Centrar</button>
                 <button id="netZoomIn" title="Ampliar" aria-label="Ampliar">+</button>
               </div>
-              <div id="netMeasureCallout" class="net-measure-callout"><span></span><div><small>ARISTA SEÑALADA</small><strong id="netMeasureCalloutValue">a = 4 cm</strong></div></div>
-              <div class="fold-orbit-hint">Elige Mover o Girar y arrastra · rueda o pellizca para acercar</div>
-              <div id="foldStatus" class="fold-status">Red completamente plana</div>
+              <div id="netMeasureCallout" class="net-measure-callout"><small>ARISTA SEÑALADA</small><div class="net-edge-reference"><span aria-hidden="true"></span><strong id="netMeasureCalloutValue">a = 4 cm</strong></div></div>
+              <div id="controls2d" class="net-fold-controls">
+                <span class="eyebrow">PLEGADO 2D ↔ 3D</span>
+                <button id="foldPlay" class="fold-toggle" aria-label="Plegar el desarrollo"><span id="foldPlayIcon" aria-hidden="true">▶</span><span id="foldAction">Plegar</span></button>
+                <div class="fold-timeline"><div><span>Progreso</span><strong id="foldPercent">0%</strong></div><input id="foldRange" type="range" min="0" max="100" value="0" aria-label="Progreso del plegado"></div>
+              </div>
+              <div class="net-export-controls"><button class="ghost-btn" data-open="workshop">Imprimir</button><button id="netFullscreenBtn" data-fullscreen class="round-btn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button></div>
+              <div class="net-status"><span class="eyebrow">ESTADO</span><p id="foldStatus" class="fold-status" role="status">Red completamente plana</p></div>
+            </aside>
+            <div class="fold-stage">
+              <canvas id="foldCanvas" aria-label="Animación de plegado entre la red plana y el sólido"></canvas>
+              <svg id="netSvg" viewBox="0 0 520 320" role="img" aria-label="Red plana acotada del poliedro"></svg>
             </div>
-            <div class="net-measure"><span>Arista destacada</span><strong id="netEdgeValue">4 cm</strong><small>La línea coral señala una arista; todas conservan esta medida al plegarse.</small></div>
           </div>
-        </div>
-        <div class="stage-dock">
-          <div id="controls3d" class="dock-group active"><span>Explora el sólido desde cualquier ángulo</span><button id="resetView" class="round-btn" title="Centrar vista" aria-label="Centrar vista">↺</button><button id="autoRotate" class="round-btn" title="Rotación automática" aria-label="Rotación automática">▶</button></div>
-          <div id="controls2d" class="dock-group fold-controls">
-            <button id="foldPlay" class="play-btn" aria-label="Reproducir plegado">▶</button>
-            <div class="fold-timeline"><div><span id="foldAction">Plegar 2D → 3D</span><strong id="foldPercent">0%</strong></div><input id="foldRange" type="range" min="0" max="100" value="0" aria-label="Progreso del plegado"></div>
-            <button id="foldReverse" class="ghost-btn" title="Invertir sentido">⇄ Invertir</button>
-            <button class="ghost-btn" data-open="workshop">Imprimir</button>
-          </div>
-          <button id="fullscreenBtn" class="round-btn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
         </div>
       </section>
 
+      <section id="solidExplanation" class="solid-explanation" hidden aria-label="Explicación y cálculo de la propiedad seleccionada"><div id="insightReadout" class="insight-readout" hidden role="status"></div><button id="nextInsight" class="ghost-btn" hidden>Otro ejemplo</button></section>
       <aside class="inspector panel" aria-label="Propiedades del poliedro">
+        <div class="inspector-overview">
         <div class="inspector-title">
           <div class="mini-glyph" id="miniGlyph">◢</div>
           <div><span class="eyebrow">FICHA EN VIVO</span><h2 id="infoName">Icosaedro regular</h2></div>
@@ -144,6 +169,7 @@
         </div>
         <section class="euler-card">
           <div class="section-title"><span>RELACIÓN DE EULER</span><button class="help-dot" data-tip="Para todo poliedro convexo, caras más vértices menos aristas siempre es igual a 2.">?</button></div>
+          <div class="euler-rule"><strong>C + V = A + 2</strong><p>Caras + vértices = aristas + 2</p><small>Recuerda: «César Vallejo = Abraham + 2».</small></div>
           <div class="equation"><b id="eqFaces">20</b><i>+</i><b id="eqVertices">12</b><i>−</i><b id="eqEdges">30</b><i>=</i><strong>2</strong></div>
           <div class="proof-bar"><span>✓</span><p><b>¡Se cumple!</b> Este sólido es convexo.</p></div>
         </section>
@@ -153,63 +179,117 @@
           <div><span>ÁNGULO DIEDRO</span><b id="dihedral">138,19°</b></div>
           <div><span>SIMETRÍA</span><b id="symmetry">Icosaédrica</b></div>
         </section>
-        <section id="measureLab" class="measure-lab">
+        </div>
+      </aside>
+        <details id="measureLab" class="measure-lab" open>
+          <summary>Medidas y cálculos <span>Mostrar / ocultar</span></summary>
+          <div class="measure-content">
           <div class="section-title"><span>LABORATORIO DE MEDIDAS</span><button id="copyFormula" class="copy-btn" title="Copiar resultados">Copiar</button></div>
-          <p>Cambia la arista y observa cómo crecen las medidas.</p>
+          <p>Define la arista o dedúcela a partir de otro dato conocido.</p>
+          <div class="measure-entry-row">
+          <details class="known-data" open><summary>¿Qué dato conoces?</summary><form id="knownDataForm"><div class="known-field known-quantity"><label for="knownQuantity">Dato de partida</label><select id="knownQuantity"></select></div><div class="known-field known-value"><label for="knownValue">Valor <span id="knownUnit">cm</span></label><div class="quick-answer-row"><input id="knownValue" type="number" min="0.000001" step="any" required inputmode="decimal"><div class="calculation-actions"><button type="submit" class="primary-btn">Calcular</button><label class="precision-control" for="precisionSelect"><span>Decimales</span><select id="precisionSelect" aria-describedby="precisionNote"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option><option value="12">12 · mayor precisión</option></select></label></div></div></div><details class="known-help"><summary>Cómo usar este dato · símbolos</summary><p id="knownRequirement"></p><div id="knownFormula"></div></details><p id="knownFeedback" role="status" aria-live="polite"></p></form></details>
           <div class="measure-inputs">
             <label><span>Arista <i>a</i></span><input id="edgeInput" type="number" min="0.1" max="1000" step="0.1" value="4" inputmode="decimal"></label>
             <label id="heightField"><span>Altura <i>h</i></span><input id="heightInput" type="number" min="0.1" max="1000" step="0.1" value="6" inputmode="decimal"></label>
             <label><span>Unidad</span><select id="unitSelect"><option>mm</option><option selected>cm</option><option>m</option></select></label>
           </div>
+          </div>
+          <p id="precisionNote" class="precision-note">Solo se redondea lo mostrado; el dato automático conserva su precisión interna. Si lo editas, se usa tu valor.</p>
           <div class="growth-note"><span id="growthBadge">×2 en a</span><p>El área cambia con <b>a²</b> y el volumen con <b>a³</b>.</p></div>
           <div id="resultsGrid" class="results-grid"></div>
           <details class="substitution" open><summary>Sustitución paso a paso</summary><div id="substitutionSteps"></div></details>
+          <details class="formula-library"><summary>Fórmulas de la geometría 3D</summary><label for="formulaTopic">Elige una propiedad</label><select id="formulaTopic"></select><div id="formulaTopicContent"></div></details>
+          </div>
+        </details>
+        <section class="inspector-actions learning-next" aria-labelledby="learningNextTitle">
+          <header><span class="eyebrow">TU SIGUIENTE PASO</span><h2 id="learningNextTitle">Comprende y comprueba</h2><p id="learningContext">Continúa aprendiendo sobre el sólido que estás explorando.</p></header>
+          <div class="learning-links">
+            <a id="relatedTheory" class="learning-link" href="#teoria/regulares"><span class="learning-link-label">01 · REPASAR TEORÍA</span><strong id="relatedTheoryTitle">¿Por qué es un poliedro regular?</strong><p id="relatedTheoryDescription">Relaciona sus caras, aristas y vértices.</p><span class="learning-link-action">Leer la explicación →</span></a>
+            <a class="learning-link" href="#retos"><span class="learning-link-label">02 · PONTE A PRUEBA</span><strong>Resuelve cinco retos guiados</strong><p>Identifica sólidos y aplica la relación de Euler. Cada respuesta incluye una explicación.</p><span class="learning-link-action">Ir a los retos →</span></a>
+          </div>
+          <form id="quickCheck" class="quick-check">
+            <span class="learning-link-label">03 · PRACTICA AQUÍ</span><h3>Un minuto con Euler</h3>
+            <p id="quickCheckQuestion"></p>
+            <label for="quickCheckAnswer" id="quickCheckLabel">Número de aristas</label>
+            <div class="quick-answer-row"><input id="quickCheckAnswer" type="number" min="0" step="1" required inputmode="numeric" placeholder="Tu respuesta" aria-describedby="quickCheckQuestion quickCheckFeedback"><button class="primary-btn" type="submit">Comprobar</button></div>
+            <p id="quickCheckFeedback" class="quick-feedback" role="status" aria-live="polite"></p>
+            <div class="quick-check-tools"><details><summary>Ver una pista</summary><p id="quickCheckHint"></p></details><button id="quickCheckNext" type="button" class="copy-btn">Otra pregunta ↻</button></div>
+          </form>
         </section>
-        <div class="inspector-actions">
-          <button class="wide-btn secondary" data-open="theory">Repasar teoría <span>▤</span></button>
-          <button class="wide-btn" data-open="challenge">Pon a prueba lo aprendido <span>→</span></button>
-        </div>
-      </aside>
     </main>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <dialog id="guideDialog" class="modal guide-modal">
-    <button class="modal-close" data-close aria-label="Cerrar">×</button>
+  <main class="resource-page" data-resource-page="inicio" hidden><header class="resource-header"></header><div class="resource-content solids-home"><section class="solids-hero"><span class="eyebrow">GEOMETRÍA ESPACIAL · SISTEMA ZENIT</span><h2>Explora las formas. Comprende sus medidas.</h2><p>Un mismo espacio de aprendizaje, con laboratorios distintos para superficies planas, superficies curvas y ángulos en el espacio.</p></section><div class="solids-modules"><a class="solid-module" href="#laboratorio"><svg viewBox="0 0 240 150" aria-hidden="true"><path d="M120 15 205 55 180 125 65 130 30 60Z M120 15 65 130 205 55 30 60 180 125Z"/></svg><span class="eyebrow">01 · LABORATORIO DE POLIEDROS</span><h2>Caras planas y redes plegables</h2><p>Tetraedro, cubo o hexaedro, otros platónicos, prismas configurables y ejemplos arquimedianos. Gira, despliega, mide y construye.</p><strong>Explorar poliedros →</strong></a><a class="solid-module" href="#redondos"><svg viewBox="0 0 240 150" aria-hidden="true"><ellipse cx="75" cy="35" rx="40" ry="16"/><path d="M35 35V115Q75 145 115 115V35 M155 125 190 25 225 125"/><ellipse cx="190" cy="125" rx="35" ry="12"/></svg><span class="eyebrow">02 · LABORATORIO DE CUERPOS REDONDOS</span><h2>Cilindro, cono y esfera</h2><p>Investiga radios, alturas, generatrices y secciones. Relaciona el modelo con el área, el volumen y sus fórmulas.</p><strong>Explorar cuerpos redondos →</strong></a><a class="solid-module" href="#espacio"><svg viewBox="0 0 240 150" aria-hidden="true"><path d="M120 125 35 35 200 55Z M120 125 120 15 M85 88Q120 55 156 95"/></svg><span class="eyebrow">03 · ÁNGULOS EN EL ESPACIO</span><h2>Diedros, triedros y polaridad</h2><p>Lee la teoría y observa sus gráficos. Conecta las caras vecinas, el vértice y el conjugado de un poliedro.</p><strong>Comprender los ángulos →</strong></a></div><section class="solid-classification"><h2>Todos son sólidos geométricos, pero no todos son poliedros</h2><p>El tetraedro y el hexaedro regular —el cubo— son poliedros porque su superficie está formada por polígonos. El cono, el cilindro y la esfera tienen superficies curvas: no pertenecen a los platónicos.</p><p>Ruta sugerida: explora una figura, identifica sus elementos, calcula una medida y comprueba lo aprendido. El laboratorio de poliedros conserva sus herramientas y su estado al cambiar de módulo.</p><a href="#glosario">Consultar glosario →</a> · <a href="#apariencia">Preparar la lectura para el aula →</a></section></div></main>
+
+  <main class="resource-page" data-resource-page="espacio" hidden><header class="resource-header"></header><div class="resource-content"><p>Estos conceptos se estudian mejor junto a los poliedros: una arista permite observar un diedro; un vértice permite reconocer un ángulo poliedro. No todo vértice forma un triedro.</p><div class="space-topic-grid"><a class="solid-module" href="#teoria/angulos"><h2>Ángulo diedro</h2><p>La abertura entre dos caras que comparten una arista. Observa el corte perpendicular y la medida interior.</p><strong>Estudiar diedros →</strong></a><a class="solid-module" href="#teoria/polares"><h2>Triedro y triedro polar</h2><p>Tres caras en un vértice, normales exteriores y relaciones de suplemento. Incluye modelos 3D y cálculos.</p><strong>Explorar triedros →</strong></a><a class="solid-module" href="#teoria/conjugados"><h2>Poliedros conjugados</h2><p>Relaciona las caras de un poliedro con los vértices de su dual. No es lo mismo que el triedro polar.</p><strong>Construir el dual →</strong></a></div><p><a href="#laboratorio">Aplicar estas ideas en el laboratorio de poliedros →</a></p></div></main>
+
+  <main class="resource-page" data-resource-page="redondos" hidden><header class="resource-header"></header><div class="resource-content round-page"><p>Estudia cuerpos redondos rectos con medidas reales y fórmulas exactas. La malla del dibujo aproxima las superficies curvas; no las convierte en poliedros.</p><div class="round-collection" role="group" aria-label="Elegir cuerpo redondo"><a data-round-solid="cylinder" href="#redondos/cylinder">Cilindro</a><a data-round-solid="cone" href="#redondos/cone">Cono</a><a data-round-solid="sphere" href="#redondos/sphere">Esfera</a></div><section id="roundStudio" class="round-studio"><header class="round-banner"><div><span class="eyebrow">CUERPOS REDONDOS</span><h2 id="roundName">Cilindro recto</h2></div><div class="round-toolbar"><div role="tablist" aria-label="Vista del cuerpo redondo"><button data-round-view="3d" role="tab" aria-selected="true" class="active">Vista 3D</button><button data-round-view="net" role="tab" aria-selected="false">Desarrollo plano</button></div><button id="roundZoomOut" aria-label="Reducir cuerpo">−</button><button id="roundZoomIn" aria-label="Ampliar cuerpo">+</button><button id="roundCenter">Centrar</button><button id="roundRotate" aria-pressed="false">▶ Girar</button><button id="roundFullscreen" aria-label="Pantalla completa del cuerpo redondo">⛶</button></div></header><p id="roundIntro"></p><div id="roundViewport" class="round-viewport"><canvas id="roundCanvas" aria-label="Modelo interactivo del cuerpo redondo"></canvas></div><div id="roundNet" class="round-net" hidden></div><div id="roundNetFormula" hidden></div><p>Arrastra para girar; usa la rueda, pellizca o pulsa + / − para acercar o alejar. Los controles siempre están disponibles en la cabecera.</p><div class="round-observation"><label>Señalar en 3D<select id="roundFeature"></select></label><label id="roundSectionField" hidden>Posición del corte horizontal<input id="roundSection" type="range" min="-90" max="90" value="0" step="1"></label><div><p id="roundFeatureText"></p><div id="roundSectionFormula"></div></div></div></section><section class="round-calculator"><h2>Medidas y cálculos</h2><div class="round-inputs"><label>Radio r<input id="roundRadius" type="number" min="0.1" max="1000" step="any" value="3" inputmode="decimal"></label><label id="roundHeightField">Altura h<input id="roundHeight" type="number" min="0.1" max="1000" step="any" value="6" inputmode="decimal"></label><label>Unidad<select id="roundUnit"><option>mm</option><option selected>cm</option><option>m</option></select></label><label>Decimales<select id="roundDecimals"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></select></label></div><p id="roundInputError" role="alert"></p><p>Solo se redondea la presentación. Se usa π, no 3,14, en los cálculos internos. El radio y la altura son independientes; no basta un volumen para conocer ambos.</p><details class="round-inverse"><summary>¿Conoces otro dato? Obtén el radio</summary><form id="roundKnownForm"><label>Dato de partida<select id="roundKnown"></select></label><label>Valor <span id="roundKnownUnit">cm</span><input id="roundKnownValue" type="number" min="0" step="any" required inputmode="decimal" value="3"></label><button class="primary-btn">Calcular radio</button></form><div id="roundKnownFeedback" aria-live="polite"></div></details><div id="roundResults" class="round-results"></div><details class="round-worked" open><summary>Sustitución paso a paso</summary><p>r es el radio; h es la altura; g es la generatriz del cono. cm² mide superficie y cm³ mide volumen.</p><div id="roundSteps"></div></details><div id="roundExplanation"></div></section><section class="round-practice"><h2>Comprueba la relación</h2><label for="roundCheck">Un cono y un cilindro tienen el mismo radio y altura. ¿Qué parte del volumen del cilindro ocupa el cono?</label><select id="roundCheck"><option value="">Elige una respuesta</option><option value="half">La mitad</option><option value="third">Un tercio</option><option value="same">El mismo volumen</option></select><p id="roundCheckFeedback" role="status"></p><a href="#laboratorio">Comparar con prismas y poliedros →</a> · <a href="#espacio">Estudiar ángulos en el espacio →</a></section></div></main>
+
+  <main id="guidePage" class="resource-page" data-resource-page="guia" hidden aria-label="Guía del laboratorio">
+    <header class="resource-header"></header>
+    <div class="resource-content guide-page-content">
     <div class="modal-label">GUÍA INTERACTIVA · <span id="guideStepLabel">PASO 1 DE 5</span></div>
     <div class="progress-steps" id="guideProgress"></div>
     <div id="guideContent"></div>
     <footer><button id="guidePrev" class="ghost-btn">← Anterior</button><button id="guideNext" class="primary-btn">Siguiente →</button></footer>
-  </dialog>
+    </div>
+  </main>
 
-  <dialog id="theoryDialog" class="modal full-modal">
-    <header><div><span class="modal-label">BIBLIOTECA VISUAL</span><h2>Teoría de poliedros</h2></div><button class="modal-close" data-close aria-label="Cerrar">×</button></header>
+  <main id="theoryPage" class="resource-page" data-resource-page="teoria" hidden aria-label="Teoría de poliedros">
+    <header class="resource-header"></header>
+    <div class="resource-content theory-page-content">
     <div class="theory-layout">
       <nav class="theory-nav">
-        <button class="active" data-theory="basics">◈ Fundamentos</button>
-        <button data-theory="regular">⬡ Poliedros regulares</button>
-        <button data-theory="euler">Σ Relación de Euler</button>
-        <button data-theory="angles">∠ Ángulos diedros</button>
-        <button data-theory="nets">✂ Redes planas</button>
+        <a class="active" data-theory="basics" href="#teoria/fundamentos">◈ Fundamentos</a>
+        <a data-theory="regular" href="#teoria/regulares">⬡ Poliedros regulares</a>
+        <a data-theory="euler" href="#teoria/euler">Σ Relación de Euler</a>
+        <a data-theory="angles" href="#teoria/angulos">∠ Ángulos diedros</a>
+        <a data-theory="dual" href="#teoria/conjugados">◇ Poliedros conjugados</a>
+        <a data-theory="polar" href="#teoria/polares">∠ Diedro y triedro polar</a>
+        <a data-theory="nets" href="#teoria/desarrollos">✂ Redes planas</a>
       </nav>
       <article id="theoryContent" class="theory-content"></article>
     </div>
-  </dialog>
+    </div>
+  </main>
 
-  <dialog id="challengeDialog" class="modal challenge-modal">
-    <button class="modal-close" data-close aria-label="Cerrar">×</button>
+  <main id="challengePage" class="resource-page" data-resource-page="retos" hidden aria-label="Retos de poliedros">
+    <header class="resource-header"></header>
+    <div class="resource-content challenge-page-content">
     <div class="modal-label">MODO RETO · DEDUCCIÓN</div>
+    <div class="challenge-scope"><label for="challengeScope">¿Qué quieres practicar?</label><select id="challengeScope"><option value="general">Repaso general · cinco retos</option><option value="solid">El sólido que estoy explorando</option></select><p id="challengeScopeNote">Puedes salir y volver sin perder tu avance. Cambiar el tipo de práctica inicia una serie nueva.</p></div>
     <div id="challengeContent"></div>
-  </dialog>
+    </div>
+  </main>
 
-  <dialog id="workshopDialog" class="modal workshop-modal">
-    <button class="modal-close" data-close aria-label="Cerrar">×</button>
+  <main class="resource-page" data-resource-page="glosario" hidden><header class="resource-header"></header><div class="resource-content"><p>Consulta las palabras y los símbolos del laboratorio.</p><label for="glossarySearch">Buscar un término o símbolo</label><input id="glossarySearch" type="search" placeholder="Ej.: arista, k, diedro, dual…"><div id="glossaryList" class="glossary-grid"></div></div></main>
+  <main class="resource-page" data-resource-page="apariencia" hidden><header class="resource-header"></header><div class="resource-content appearance-page"><p>Ajusta la lectura para trabajar individualmente o mostrar el sitio a toda el aula. Se guarda en este navegador.</p><div class="appearance-options"><label>Tamaño del texto<select id="appearance-size"><option value="normal">Normal</option><option value="large">Grande · 120 %</option><option value="classroom">Aula / proyector · 140 %</option></select></label><label>Tipografía<select id="appearance-font"><option value="manrope">Manrope</option><option value="arial">Arial</option><option value="verdana">Verdana</option><option value="georgia">Georgia</option></select></label><label>Color de acento<select id="appearance-accent"><option value="violet">Violeta</option><option value="blue">Azul</option><option value="green">Verde</option><option value="orange">Naranja</option></select></label><label>Tema<select id="appearance-theme"><option value="light">Claro</option><option value="dark">Oscuro</option></select></label></div><section class="appearance-preview"><h2>Vista de lectura</h2><p>La arista mide a = 4,00 cm. El área de una cara triangular es aproximadamente 6,93 cm².</p><p>Las fórmulas conservan su notación matemática. El tamaño del texto no cambia las medidas del modelo ni la escala de impresión.</p></section><button id="appearanceReset" class="ghost-btn">Restablecer apariencia</button><p id="appearanceStatus" role="status"></p><a href="#laboratorio">Volver al laboratorio →</a></div></main>
+  <main id="measurePage" class="resource-page" data-resource-page="medidas" hidden aria-label="Medidas y cálculos del poliedro">
+    <header class="resource-header"></header>
+    <div class="resource-content measure-page-content"><p class="measure-page-intro">Calcula las medidas de <strong id="measureSolidName">este poliedro</strong>. Cambia la arista y revisa las fórmulas y cada sustitución. Para elegir otro sólido, vuelve al laboratorio.</p><div id="measurePageContent"></div></div>
+  </main>
+
+  <main id="workshopPage" class="workshop-page resource-page" data-resource-page="imprimir" hidden aria-label="Página de impresión de plantillas">
+    <header class="resource-header"></header>
+    <div class="workshop-page-content">
     <div class="workshop-hero"><span>✂</span><div><span class="modal-label">TALLER MANOS A LA OBRA</span><h2>Construye tu propio <b id="workshopName">icosaedro</b></h2><p>Descarga la red, recorta por la línea continua y dobla por la línea punteada.</p></div></div>
-    <div class="workshop-preview"><svg id="workshopSvg" viewBox="0 0 520 320"></svg></div>
-    <div class="materials"><b>Necesitas</b><span>Cartulina A4</span><span>Tijeras</span><span>Regla</span><span>Pegamento</span></div>
+    <svg id="workshopSvg" viewBox="0 0 520 320" hidden aria-hidden="true"></svg>
+    <div class="print-options">
+      <label>Hoja o montaje<select id="printFormat"><option value="a4">A4 · una hoja</option><option value="a3">A3 · una hoja</option><option value="a2">A2 · una hoja</option><option value="a3-tiles">A3 en 2 hojas A4 · montaje</option><option value="a2-tiles">A2 en 4 hojas A4 · montaje</option></select></label>
+      <label>Tamaño de la plantilla<select id="printScale"><option value="fit">Máximo que cabe en la hoja</option><option value="exact">Arista de medida exacta</option></select></label>
+      <label id="printEdgeField" hidden>Arista señalada (cm)<input id="printEdgeCm" type="number" min="0.1" max="100" step="0.1" value="5" inputmode="decimal"></label>
+    </div>
+    <p id="printSummary" class="print-summary" aria-live="polite"></p>
+    <p id="printWarning" class="print-warning" role="alert" hidden></p>
+    <p class="print-instructions">Imprime en <b>tamaño real / escala 100 %</b>, con el papel y la orientación de la vista previa, sin encabezados ni pies del navegador. Comprueba con una regla que la barra de control mida <b>5 cm</b>. Se reservan 7 mm de margen. Línea continua: cortar; punteada: doblar. El trazo grueso señala la arista de referencia.</p>
+    <p id="assemblyHelp" class="assembly-help" hidden></p>
+    <div id="printPreview" class="print-preview" aria-label="Vista previa de las hojas para recortar"></div>
+    <div class="materials"><b>Necesitas</b><span>Papel o cartulina</span><span>Tijeras</span><span>Regla</span><span>Pegamento</span></div>
     <footer><button id="downloadSvg" class="ghost-btn">↓ Descargar SVG</button><button id="printNet" class="primary-btn">Imprimir o guardar PDF</button></footer>
-  </dialog>
+    </div>
+  </main>
 
   <template id="solidCardTemplate">
     <button class="solid-card">
@@ -219,6 +299,10 @@
     </button>
   </template>
 
+  <footer class="site-footer" aria-label="Créditos del sitio">
+    <div class="footer-content"><div><strong>Sólidos geométricos · Sistema Zenit</strong><p>Explora en 2D y 3D. Comprende, calcula y construye.</p></div><div class="footer-resources"><nav aria-label="Enlaces del pie de página"><a href="#teoria/fundamentos">Teoría</a><a href="#glosario">Glosario</a><a href="#guia">Guía de uso</a><a href="https://mathworld.wolfram.com/PappussCentroidTheorem.html" target="_blank" rel="noopener noreferrer">Fuente: Pappus‑Guldin ↗</a></nav><p class="footer-credit">Desarrollado por <a href="https://xavier.cabellosalirrosas.com" target="_blank" rel="noopener noreferrer">Xavier Cabello</a></p></div></div>
+  </footer>
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./site-navigation.js"></script>
 </body>
 </html>

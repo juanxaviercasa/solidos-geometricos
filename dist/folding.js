@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const EPS=1e-5;
-const key3=v=>`${v.x.toFixed(5)},${v.y.toFixed(5)},${v.z.toFixed(5)}`;
+const key3=v=>v.toArray().map(value=>(Math.abs(value)<EPS?0:value).toFixed(5)).join(',');
 const edgeKey=(a,b)=>[a,b].sort().join('|');
 const cross2=(a,b,c)=>(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);
 const mix=(a,b,t)=>a+(b-a)*t;
 const ease=t=>t*t*(3-2*t);
 
-function extractFaces(source){
+export function extractFaces(source){
   const geometry=source.index?source.toNonIndexed():source.clone();
   geometry.computeVertexNormals();
   const p=geometry.attributes.position,groups=[];
@@ -27,7 +27,13 @@ function extractFaces(source){
     const vertices=[...g.vertices.values()],center=vertices.reduce((s,v)=>s.add(v),new THREE.Vector3()).multiplyScalar(1/vertices.length);
     const u=new THREE.Vector3().subVectors(vertices[0],center).normalize(),v=new THREE.Vector3().crossVectors(g.normal,u).normalize();
     vertices.sort((a,b)=>Math.atan2(new THREE.Vector3().subVectors(a,center).dot(v),new THREE.Vector3().subVectors(a,center).dot(u))-Math.atan2(new THREE.Vector3().subVectors(b,center).dot(v),new THREE.Vector3().subVectors(b,center).dot(u)));
-    return{id,normal:g.normal,center,vertices,keys:vertices.map(key3)};
+    // Triangulated caps may contain a centre point; only boundary vertices form a face.
+    const projected=vertices.map(vertex=>({vertex,x:new THREE.Vector3().subVectors(vertex,center).dot(u),y:new THREE.Vector3().subVectors(vertex,center).dot(v)})).sort((a,b)=>a.x-b.x||a.y-b.y);
+    const hullHalf=points=>{const hull=[];for(const point of points){while(hull.length>1&&cross2(hull[hull.length-2],hull[hull.length-1],point)<=EPS)hull.pop();hull.push(point)}return hull};
+    const hull=[...hullHalf(projected).slice(0,-1),...hullHalf([...projected].reverse()).slice(0,-1)],boundary=new Set(hull.map(p=>key3(p.vertex)));
+    const outer=vertices.filter(vertex=>boundary.has(key3(vertex)));
+    const faceCenter=outer.reduce((sum,vertex)=>sum.add(vertex),new THREE.Vector3()).multiplyScalar(1/outer.length);
+    return{id,normal:g.normal,center:faceCenter,vertices:outer,keys:outer.map(key3)};
   });
 }
 
@@ -65,7 +71,15 @@ function separated(polyA,polyB){
   for(const poly of [a,b])for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length],axis=new THREE.Vector2(-(q.y-p.y),q.x-p.x).normalize();let amin=Infinity,amax=-Infinity,bmin=Infinity,bmax=-Infinity;a.forEach(v=>{const d=v.dot(axis);amin=Math.min(amin,d);amax=Math.max(amax,d)});b.forEach(v=>{const d=v.dot(axis);bmin=Math.min(bmin,d);bmax=Math.max(bmax,d)});if(amax<=bmin+EPS||bmax<=amin+EPS)return true}return false;
 }
 function overlapScore(faces,maps){let score=0;for(let i=0;i<faces.length;i++)for(let j=i+1;j<faces.length;j++){const a=faces[i].keys.map(k=>maps.get(i)?.get(k)).filter(Boolean),b=faces[j].keys.map(k=>maps.get(j)?.get(k)).filter(Boolean);if(a.length&&b.length&&!separated(a,b))score++}return score}
-function bestLayout(faces,adjacency){const rand=seeded(faces.length*7919),attempts=faces.length>15?900:350;let best=null,bestScore=Infinity;for(let i=0;i<attempts;i++){const tree=makeTree(adjacency,rand),maps=layoutTree(faces,tree),score=overlapScore(faces,maps);if(score<bestScore){best={tree,maps};bestScore=score;if(score===0)break}}return{...best,score:bestScore}}
+function bestLayout(faces,adjacency){
+ const bases=faces.filter(f=>Math.abs(f.normal.y)>.9999),sides=faces.filter(f=>Math.abs(f.normal.y)<.0001&&f.keys.length===4);
+ if(bases.length===2&&sides.length===faces.length-2){
+  const root=sides[0].id,seen=new Set([root]),tree=[];let current=root;
+  while(seen.size<sides.length){const link=adjacency[current].find(e=>!seen.has(e.to)&&sides.some(f=>f.id===e.to));if(!link)break;tree.push({from:current,...link});seen.add(link.to);current=link.to}
+  bases.forEach(base=>{const link=adjacency[root].find(e=>e.to===base.id);if(link)tree.push({from:root,...link})});
+  if(tree.length===faces.length-1){const spec={root,tree},maps=layoutTree(faces,spec);return{tree:spec,maps,score:overlapScore(faces,maps)}}
+ }
+ const rand=seeded(faces.length*7919),attempts=faces.length>15?900:350;let best=null,bestScore=Infinity;for(let i=0;i<attempts;i++){const tree=makeTree(adjacency,rand),maps=layoutTree(faces,tree),score=overlapScore(faces,maps);if(score<bestScore){best={tree,maps};bestScore=score;if(score===0)break}}return{...best,score:bestScore}}
 
 function normalizeLayout(faces,maps){
   const all=[];faces.forEach(f=>f.keys.forEach(k=>all.push(maps.get(f.id).get(k))));const min=new THREE.Vector2(Infinity,Infinity),max=new THREE.Vector2(-Infinity,-Infinity);all.forEach(p=>{min.min(p);max.max(p)});const center=min.clone().add(max).multiplyScalar(.5),scale=6/Math.max(max.x-min.x,max.y-min.y);faces.forEach(f=>f.keys.forEach(k=>maps.get(f.id).get(k).sub(center).multiplyScalar(scale)));return{min,max,scale}
@@ -74,7 +88,7 @@ function normalizeLayout(faces,maps){
 function svgFromLayout(faces,maps,tree,measure){
   const all=[];faces.forEach(f=>f.keys.forEach(k=>all.push(maps.get(f.id).get(k))));const min=new THREE.Vector2(Infinity,Infinity),max=new THREE.Vector2(-Infinity,-Infinity);all.forEach(p=>{min.min(p);max.max(p)});const w=max.x-min.x||1,h=max.y-min.y||1,s=Math.min(480/w,285/h),ox=260-(min.x+max.x)*s/2,oy=155+(min.y+max.y)*s/2,pt=p=>new THREE.Vector2(ox+p.x*s,oy-p.y*s),folds=new Set(tree.tree.map(x=>x.edge.key));let out='';
   faces.forEach((f,fi)=>{const ps=f.keys.map(k=>pt(maps.get(f.id).get(k)));out+=`<polygon class="net-face face-${fi%5}" data-face="${fi+1}" points="${ps.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}"/>`});
-  const drawn=new Set();let edgeIndex=0;faces.forEach(f=>f.keys.forEach((a,i)=>{const b=f.keys[(i+1)%f.keys.length],ek=edgeKey(a,b),a2=pt(maps.get(f.id).get(a)),b2=pt(maps.get(f.id).get(b)),fold=folds.has(ek),first=!drawn.has(ek);if(fold&&!first)return;if(!fold&&first){const poly=f.keys.map(k=>pt(maps.get(f.id).get(k))),cent=poly.reduce((sum,p)=>sum.add(p),new THREE.Vector2()).multiplyScalar(1/poly.length),dir=new THREE.Vector2().subVectors(b2,a2),len=dir.length();dir.normalize();let n=new THREE.Vector2(-dir.y,dir.x),mid=a2.clone().add(b2).multiplyScalar(.5);if(n.dot(new THREE.Vector2().subVectors(cent,mid))>0)n.negate();const p1=a2.clone().addScaledVector(dir,len*.16),p2=b2.clone().addScaledVector(dir,-len*.16),q1=p1.clone().addScaledVector(n,Math.min(10,len*.22)),q2=p2.clone().addScaledVector(n,Math.min(10,len*.22));out+=`<polygon class="glue-tab" points="${p1.x.toFixed(1)},${p1.y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)} ${q2.x.toFixed(1)},${q2.y.toFixed(1)} ${q1.x.toFixed(1)},${q1.y.toFixed(1)}"/>`}drawn.add(ek);edgeIndex++;out+=`<line class="${fold?'fold-edge':'cut-edge'}${edgeIndex===1?' measure-edge':''}" data-edge="${edgeIndex}" x1="${a2.x.toFixed(1)}" y1="${a2.y.toFixed(1)}" x2="${b2.x.toFixed(1)}" y2="${b2.y.toFixed(1)}"/>`;}));
+  const referenceFace=faces.find(face=>Math.abs(face.normal.y)>.9999)||faces[0],referenceKey=edgeKey(referenceFace.keys[0],referenceFace.keys[1]);const drawn=new Set();let edgeIndex=0,referenceDrawn=false;faces.forEach(f=>f.keys.forEach((a,i)=>{const b=f.keys[(i+1)%f.keys.length],ek=edgeKey(a,b),a2=pt(maps.get(f.id).get(a)),b2=pt(maps.get(f.id).get(b)),fold=folds.has(ek),first=!drawn.has(ek);if(fold&&!first)return;if(!fold&&first){const poly=f.keys.map(k=>pt(maps.get(f.id).get(k))),cent=poly.reduce((sum,p)=>sum.add(p),new THREE.Vector2()).multiplyScalar(1/poly.length),dir=new THREE.Vector2().subVectors(b2,a2),len=dir.length();dir.normalize();let n=new THREE.Vector2(-dir.y,dir.x),mid=a2.clone().add(b2).multiplyScalar(.5);if(n.dot(new THREE.Vector2().subVectors(cent,mid))>0)n.negate();const p1=a2.clone().addScaledVector(dir,len*.16),p2=b2.clone().addScaledVector(dir,-len*.16),q1=p1.clone().addScaledVector(n,Math.min(10,len*.22)),q2=p2.clone().addScaledVector(n,Math.min(10,len*.22));out+=`<polygon class="glue-tab" points="${p1.x.toFixed(1)},${p1.y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)} ${q2.x.toFixed(1)},${q2.y.toFixed(1)} ${q1.x.toFixed(1)},${q1.y.toFixed(1)}"/>`}drawn.add(ek);edgeIndex++;out+=`<line class="${fold?'fold-edge':'cut-edge'}${ek===referenceKey&&!referenceDrawn?(referenceDrawn=true,' measure-edge'):''}" data-edge="${edgeIndex}" x1="${a2.x.toFixed(1)}" y1="${a2.y.toFixed(1)}" x2="${b2.x.toFixed(1)}" y2="${b2.y.toFixed(1)}"/>`;}));
   const vertexPoints=new Map();faces.forEach(f=>f.keys.forEach(k=>{const p=pt(maps.get(f.id).get(k)),key=`${p.x.toFixed(1)},${p.y.toFixed(1)}`;if(!vertexPoints.has(key))vertexPoints.set(key,p)}));let vertexIndex=0;for(const p of vertexPoints.values()){vertexIndex++;out+=`<circle class="vertex-marker" data-vertex="${vertexIndex}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.4"/>`}
   return out;
 }

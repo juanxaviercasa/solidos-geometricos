@@ -1,0 +1,35 @@
+/* One shared header: identity and resources first, evenly distributed routes below. */
+.site-header.topbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px 24px}
+.site-header.topbar .brand{width:auto;max-width:100%;min-width:0}
+.site-header .brand-mark{flex-shrink:0}
+.site-header .brand>span:last-child{min-width:0}
+.site-header .brand strong{overflow-wrap:anywhere}
+.site-header.topbar .module-navigation{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:10px;padding:0;order:initial}
+.site-header .module-navigation a{height:100%;padding:10px 12px;overflow-wrap:anywhere}
+.site-header .site-resources{grid-column:2;grid-row:1;margin:0;min-width:0;justify-self:end}
+.site-header .site-resources[open]{grid-column:1/-1;grid-row:3;width:100%;justify-self:stretch}
+.site-header .site-resources summary{max-width:100%;width:fit-content;margin:0 0 0 auto}
+.site-header .site-resources .top-actions{min-width:0}
+.site-header .site-resources .top-actions a{white-space:normal;overflow-wrap:anywhere}
+@media(max-width:700px){
+ .site-header.topbar{gap:12px;padding:14px}
+ .site-header.topbar .module-navigation{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .site-header .module-navigation a:last-child:nth-child(odd){grid-column:1/-1}
+ .site-header .module-navigation a{padding:10px 8px}
+ .site-header .site-resources summary{font-size:13px;padding:9px 10px}
+}
+@media(max-width:460px){
+ .site-header.topbar{grid-template-columns:minmax(0,1fr);gap:12px}
+ .site-header .site-resources{grid-column:1;grid-row:2;justify-self:start}
+ .site-header.topbar .module-navigation{grid-row:3}
+ .site-header .site-resources[open]{grid-row:2}
+ .site-header .site-resources summary{margin:0}
+ .site-header .site-resources .top-actions{justify-content:flex-start}
+}
+@media print{.site-header.topbar{display:none!important}}
+.site-footer{clear:both;padding:20px clamp(14px,3vw,40px);border-top:1px solid var(--line);background:var(--paper);color:var(--muted);text-align:center;font-size:calc(14px * var(--reading-scale,1));line-height:1.7;overflow-wrap:anywhere}
+.site-footer p{margin:0}
+.site-footer a{color:var(--violet);font-weight:800;text-underline-offset:4px}
+.site-footer a:hover{text-decoration-thickness:2px}
+.site-footer a:focus-visible{outline:3px solid var(--violet);outline-offset:4px;border-radius:3px}
+@media print{.site-footer{display:none!important}}

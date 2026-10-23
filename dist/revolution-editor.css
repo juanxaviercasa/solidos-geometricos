@@ -1,0 +1,23 @@
+.rev-cartesian-editor{border:1px solid var(--line);border-radius:14px;padding:16px;margin:18px 0;background:var(--paper)}
+.rev-cartesian-editor>summary{cursor:pointer;font-weight:800;font-size:calc(18px * var(--reading-scale));line-height:1.5}
+.rev-cartesian-editor p{line-height:1.7}.rev-editor-tools{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:14px 0}
+.rev-editor-tools label{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0}.rev-editor-tools button{padding:9px 12px;min-height:40px;border:1px solid var(--line);border-radius:9px;cursor:pointer;background:var(--paper-2);color:var(--ink);font:inherit}
+.rev-editor-tools button.primary-btn{background:var(--violet);color:white}
+#revCartesianCanvas{display:block;width:100%;height:clamp(340px,52vh,540px);border:1px solid var(--line);border-radius:10px;background:white;touch-action:none;cursor:crosshair}
+#revEditorPoints{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(205px,100%),1fr));gap:8px}
+#revEditorPoints label{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);align-items:center;gap:8px;padding:8px;background:var(--paper-2);border-radius:9px}
+#revEditorPoints input{width:100%;min-width:0}#revEditorError{font-weight:700;color:#a02520}#revCurveEditor{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:12px}#revCurveEditor textarea{display:block;width:100%;margin:10px 0}#revCurveNotice{line-height:1.7;color:var(--muted);margin:12px 0}.rev-offset-note{grid-column:1/-1}
+@media(max-width:480px){.rev-cartesian-editor{padding:12px}#revCartesianCanvas{height:360px}.rev-editor-tools{gap:8px}.rev-editor-tools button{flex:1 1 120px}}
+.rev-coordinate-reference{padding:16px;border:1px solid var(--line);border-radius:12px;margin:16px 0;min-width:0;background:var(--paper-2)}
+.rev-coordinate-reference[hidden]{display:none!important}.rev-coordinate-reference h3{margin:0 0 12px;font-size:calc(19px * var(--reading-scale));line-height:1.5}.rev-coordinate-reference p{line-height:1.7}.rev-reference-table{overflow-x:auto;max-height:340px}.rev-reference-table table{border-collapse:collapse;width:100%;font-size:calc(14px * var(--reading-scale));line-height:1.6}.rev-reference-table :is(th,td){padding:8px 12px;border-bottom:1px solid var(--line);text-align:left}
+.revolution-page{max-width:1560px!important}.rev-cartesian-editor:fullscreen{width:100%;height:100dvh;background:var(--paper);overflow:auto;border-radius:0;margin:0;padding:16px}.rev-cartesian-editor:fullscreen #revCartesianCanvas{height:70dvh;min-height:300px}.rev-cartesian-editor #revCartesianCanvas{height:clamp(420px,62vh,740px)}@media(max-width:600px){.rev-cartesian-editor #revCartesianCanvas{height:440px}}
+.rev-editor-tools button:disabled{opacity:.4;cursor:not-allowed}.rev-editor-tools button:focus-visible,#revCartesianCanvas:focus-visible{outline:3px solid var(--violet);outline-offset:3px}.rev-editor-shortcuts{font-size:calc(13px * var(--reading-scale));color:var(--muted);line-height:1.7;margin:8px 0 12px}
+.revolution-page .rev-inputs{align-items:end;column-gap:16px;row-gap:14px}
+.revolution-page .rev-inputs>label{flex:0 1 auto;width:max-content;max-width:100%;align-content:end;line-height:1.5}
+.revolution-page .rev-inputs>label:first-child{flex:0 1 30rem;min-width:0}
+.revolution-page .rev-inputs #revKind{width:100%;min-height:44px}
+.revolution-page .rev-inputs input[type="number"]{width:9ch;min-width:7ch;max-width:100%;min-height:44px;font-variant-numeric:tabular-nums}
+@media(max-width:700px){
+ .revolution-page .rev-inputs>label:first-child{flex:1 1 100%}
+ .revolution-page .rev-inputs>label:not(:first-child){flex:1 1 8rem}
+}
