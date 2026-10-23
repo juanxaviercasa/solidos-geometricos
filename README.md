@@ -27,6 +27,18 @@ python -m http.server 8080 --directory dist
 Abre `http://localhost:8080`. Three.js y KaTeX se cargan desde CDN, por lo que
 se necesita conexión a Internet. No hay backend ni credenciales necesarias.
 
+## Despliegue en GitHub Pages
+
+El workflow `.github/workflows/pages.yml` publica `dist/` al enviar cambios a
+`main`. En Settings → Pages, la fuente de publicación debe ser **GitHub Actions**.
+El dominio personalizado configurado es `solidosgeometricos.sistemazenit.com`.
+
+En el proveedor DNS de `sistemazenit.com`, configura el registro **CNAME** de
+`solidosgeometricos` hacia `juanxaviercasa.github.io` (sin protocolo ni ruta).
+El archivo `dist/CNAME` documenta ese dominio; con Actions también debe estar
+registrado en Settings → Pages. Cuando el DNS y el certificado estén listos,
+activa **Enforce HTTPS**. No se necesitan secretos para el workflow.
+
 ## Impresión y límites conocidos
 
 Imprime a tamaño real (100 %), sin ajustar a página, y comprueba con una regla
