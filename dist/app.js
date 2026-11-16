@@ -44,6 +44,10 @@ let quickCheckIndex=0;
 const panelCollapsed={'3d':false,'2d':false};
 let netView={x:0,y:0,scale:1,rotation:0},netLayers={faces:true,vertices:false,edges:true,measure:true};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const webglFallback=$('#webglFallback');
+function markWebGLUnavailable(){if(webglFallback){webglFallback.hidden=false;webglFallback.setAttribute('aria-live','polite')}document.body.classList.add('webgl-unavailable')}
+function safeRenderer(canvas,options={}){try{return new THREE.WebGLRenderer({canvas,...options})}catch(error){console.warn('WebGL no disponible; se mantiene el contenido pedagógico.',error);markWebGLUnavailable();return{domElement:canvas,shadowMap:{enabled:false,type:null},setPixelRatio(){},setSize(){},render(){}}}}
+$('#polyCanvas').addEventListener('webgl-unavailable',markWebGLUnavailable);$('#foldCanvas').addEventListener('webgl-unavailable',markWebGLUnavailable);
 // Navigation belongs to the viewer header, never to a hideable information panel.
 const viewerNavigation=document.createElement('div');viewerNavigation.className='viewer-navigation';viewerNavigation.setAttribute('aria-label','Controles permanentes del visualizador');
 $('.stage-banner').classList.add('viewer-header');$('.stage-actions').classList.add('viewer-actions');$('.stage-actions .view-switch').classList.add('viewer-tabs');
@@ -69,7 +73,7 @@ imageDownload.addEventListener('click',async()=>{
 
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(34,1,.1,100); camera.position.set(4.9,3.4,6.2);
-const renderer=new THREE.WebGLRenderer({canvas:$('#polyCanvas'),antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const renderer=safeRenderer($('#polyCanvas'),{antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true; controls.dampingFactor=.06; controls.minDistance=3; controls.maxDistance=20; controls.target.set(0,0,0);
 let solidAutoFit=true;
 controls.addEventListener('start',()=>{solidAutoFit=false});
@@ -469,13 +473,16 @@ const generalChallenges=[
  {q:'Tengo dos bases triangulares paralelas y tres caras laterales rectangulares.',a:'Prisma triangular',opts:['Tetraedro','Octaedro','Prisma triangular','Cuboctaedro'],why:'Todo prisma se identifica por sus dos bases congruentes y paralelas.'}
 ];
 let challenges=generalChallenges,challengeSolidKey=null;
-function renderChallenge(){answered=false;const c=challenges[challengeStep];$('#challengeContent').innerHTML=`<h2 class="challenge-title">${$('#challengeScope').value==='solid'?'Practica con '+solids[challengeSolidKey].name:'Lee las pistas y deduce'}</h2><div class="challenge-clue"><span>PISTA ${challengeStep+1} DE ${challenges.length}</span><p>${c.q}</p></div><div class="answers">${c.opts.map(o=>`<button class="answer-btn" data-answer="${o}">${o}</button>`).join('')}</div><p class="feedback">Elige una respuesta.</p><div class="challenge-foot"><div class="challenge-dots">${challenges.map((_,i)=>`<i class="${i<challengeStep?'done':''}"></i>`).join('')}</div><button id="nextChallenge" class="primary-btn" disabled>${challengeStep===challenges.length-1?'Ver resultado':'Siguiente →'}</button></div>`;$$('.answer-btn').forEach(b=>b.addEventListener('click',()=>answerChallenge(b)));$('#nextChallenge').addEventListener('click',()=>{if(challengeStep===challenges.length-1){$('#challengeContent').innerHTML=`<div class="concept-card"><span class="modal-label">RETO COMPLETADO</span><h2>${score} de ${challenges.length} respuestas correctas</h2><p>${score===5?'Excelente: conectaste propiedades, conteos y nombres.':'Buen intento. Vuelve al laboratorio, compara los sólidos y repite cuando quieras.'}</p></div><footer><button class="primary-btn" id="retryChallenge">Repetir retos</button></footer>`;$('#scorePill').textContent=`${score}/5`;$('#retryChallenge').addEventListener('click',()=>{score=0;challengeStep=0;renderChallenge()});return}challengeStep++;renderChallenge()})}
+const challengeStorageKey='zenit-challenge-progress';
+function saveChallengeProgress(){try{localStorage.setItem(challengeStorageKey,JSON.stringify({step:challengeStep,score,scope:$('#challengeScope')?.value||'general'}))}catch{}}
+try{const saved=JSON.parse(localStorage.getItem(challengeStorageKey)||'{}');if(Number.isInteger(saved.step)&&saved.step>=0&&saved.step<generalChallenges.length)challengeStep=saved.step;if(Number.isInteger(saved.score)&&saved.score>=0&&saved.score<=generalChallenges.length)score=saved.score}catch{}
+function renderChallenge(){answered=false;saveChallengeProgress();const c=challenges[challengeStep];$('#challengeContent').innerHTML=`<h2 class="challenge-title">${$('#challengeScope').value==='solid'?'Practica con '+solids[challengeSolidKey].name:'Lee las pistas y deduce'}</h2><div class="challenge-clue"><span>PISTA ${challengeStep+1} DE ${challenges.length}</span><p>${c.q}</p></div><div class="answers">${c.opts.map(o=>`<button class="answer-btn" data-answer="${o}">${o}</button>`).join('')}</div><p class="feedback">Elige una respuesta.</p><div class="challenge-foot"><div class="challenge-dots">${challenges.map((_,i)=>`<i class="${i<challengeStep?'done':''}"></i>`).join('')}</div><button id="nextChallenge" class="primary-btn" disabled>${challengeStep===challenges.length-1?'Ver resultado':'Siguiente →'}</button></div>`;$$('.answer-btn').forEach(b=>b.addEventListener('click',()=>answerChallenge(b)));$('#nextChallenge').addEventListener('click',()=>{if(challengeStep===challenges.length-1){$('#challengeContent').innerHTML=`<div class="concept-card"><span class="modal-label">RETO COMPLETADO</span><h2>${score} de ${challenges.length} respuestas correctas</h2><p>${score===5?'Excelente: conectaste propiedades, conteos y nombres.':'Buen intento. Vuelve al laboratorio, compara los sólidos y repite cuando quieras.'}</p></div><footer><button class="primary-btn" id="retryChallenge">Repetir retos</button></footer>`;$('#scorePill').textContent=`${score}/5`;$('#retryChallenge').addEventListener('click',()=>{score=0;challengeStep=0;saveChallengeProgress();renderChallenge()});return}challengeStep++;renderChallenge()})}
 function refreshChallengeScope(){
  const personal=$('#challengeScope').value==='solid';
  $('#challengeScope option[value="solid"]').textContent=`${solids[currentKey].name} · cinco retos`;
- if(personal&&challengeSolidKey!==currentKey){challenges=solidChallenges(solids[currentKey],modelGroup.userData.analysis);challengeSolidKey=currentKey;challengeStep=0;score=0;$('#scorePill').textContent='0/5';renderChallenge()}
+ if(personal&&challengeSolidKey!==currentKey){challenges=solidChallenges(solids[currentKey],modelGroup.userData.analysis);challengeSolidKey=currentKey;challengeStep=0;score=0;saveChallengeProgress();$('#scorePill').textContent='0/5';renderChallenge()}
 }
-$('#challengeScope').addEventListener('change',()=>{challengeSolidKey=null;challenges=generalChallenges;challengeStep=0;score=0;$('#scorePill').textContent='0/5';if($('#challengeScope').value==='solid')refreshChallengeScope();else renderChallenge()});
+$('#challengeScope').addEventListener('change',()=>{challengeSolidKey=null;challenges=generalChallenges;challengeStep=0;score=0;saveChallengeProgress();$('#scorePill').textContent='0/5';if($('#challengeScope').value==='solid')refreshChallengeScope();else renderChallenge()});
 document.addEventListener('click',event=>{
  const button=event.target.closest('[data-explore-mission]');if(!button)return;
  const mission=button.dataset.exploreMission;
@@ -486,7 +493,7 @@ document.addEventListener('click',event=>{
  }
  navigateTo('laboratorio');requestAnimationFrame(()=>requestAnimationFrame(()=>$('.stage').scrollIntoView({block:'center'})));
 });
-function answerChallenge(btn){if(answered)return;answered=true;const c=challenges[challengeStep],ok=btn.dataset.answer===c.a;if(ok)score++;btn.classList.add(ok?'correct':'wrong');if(!ok)$$('.answer-btn').find(b=>b.dataset.answer===c.a)?.classList.add('correct');$('.feedback').innerHTML=`<b>${ok?'¡Correcto!':'Casi.'}</b> ${c.why}`;$('#nextChallenge').disabled=false;$('#scorePill').textContent=`${score}/${challenges.length}`}
+function answerChallenge(btn){if(answered)return;answered=true;const c=challenges[challengeStep],ok=btn.dataset.answer===c.a;if(ok)score++;btn.classList.add(ok?'correct':'wrong');if(!ok)$$('.answer-btn').find(b=>b.dataset.answer===c.a)?.classList.add('correct');$('.feedback').innerHTML=`<b>${ok?'¡Correcto!':'Casi.'}</b> ${c.why}`;$('#nextChallenge').disabled=false;$('#scorePill').textContent=`${score}/${challenges.length}`;saveChallengeProgress()}
 
 const printWorkshop=initPrinting({getName:()=>solids[currentKey].name,getTemplate:()=>$('#workshopSvg')});
 const resourceRoutes={theory:'teoria/fundamentos',measure:'medidas',workshop:'imprimir',challenge:'retos',guide:'guia'};

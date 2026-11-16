@@ -83,3 +83,6 @@ body.dark .stage{background:linear-gradient(145deg,#202533,#171b25)!important}
 body.dark #view3d,body.dark #view2d{background:linear-gradient(145deg,#1d2330,#171b25)}
 body.dark #solidViewport,body.dark .fold-stage{background:radial-gradient(circle at 48% 42%,#30364b 0%,#202536 58%,#171b25 100%)}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.webgl-fallback{position:absolute;inset:12%;z-index:5;display:grid;place-content:center;gap:8px;padding:clamp(20px,4vw,42px);border:1px solid #f0b0a8;border-radius:18px;background:rgba(255,248,244,.94);box-shadow:0 18px 40px rgba(82,45,38,.14);text-align:center;color:var(--zenit-ink)}
+.webgl-fallback[hidden]{display:none!important}.webgl-fallback strong{font-size:clamp(16px,2vw,24px)}.webgl-fallback p{max-width:42ch;margin:0 auto;color:#6c5960;line-height:1.7}.webgl-fallback a{color:var(--zenit-violet-deep);font-weight:800;text-decoration:underline;text-underline-offset:3px}
+body.dark .webgl-fallback{background:rgba(38,30,34,.95);color:#fff0eb;border-color:#9d5e58}

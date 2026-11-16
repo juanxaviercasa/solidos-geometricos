@@ -89,3 +89,13 @@ La capa se añadió como `dist/visual-refresh.css` y se carga después de las ho
 - Nueva capa visual transversal: `dist/visual-refresh.css`.
 - Corrección de etiqueta accesible para el progreso de plegado.
 - Sin cambios a la lógica geométrica ni a las funcionalidades interactivas.
+
+## Fase 2 implementada en esta entrega
+
+Se añadió persistencia local del avance de los retos mediante `localStorage`, limitada al navegador del estudiante y sin enviar datos a ningún servidor. Al volver al sitio se conserva la pregunta y la puntuación del reto general; cambiar de ámbito o reiniciar el reto limpia ese estado de forma explícita.
+
+Se incorporó una recuperación pedagógica para WebGL. Si el visor 3D no puede crear el contexto gráfico, la aplicación ya no queda en un canvas vacío: muestra un aviso claro y mantiene disponibles la ficha, las fórmulas y el desarrollo 2D. El motor 2D también usa un renderer seguro para evitar que ese fallo bloquee el resto de la aplicación.
+
+Se añadió `scripts/smoke-test.mjs` y se integró al workflow de Pages. La prueba comprueba la presencia de los archivos esenciales, el HTML en español, el canvas 3D, el fallback WebGL, la etiqueta accesible del progreso de plegado y la capa visual. Esto no sustituye las pruebas de interacción del navegador, pero detecta rápidamente una publicación incompleta.
+
+También se actualizaron las versiones de las acciones de checkout y upload a versiones estables, manteniendo permisos mínimos para Pages. El contenido y las fórmulas no fueron modificados.
