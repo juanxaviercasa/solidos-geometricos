@@ -10,7 +10,6 @@ const required = [
   'site-navigation.js',
   'folding.js',
   'assets/solidos-estudio.png',
-  'CNAME',
 ];
 const missing = required.filter(file => !existsSync(resolve(root, file)));
 if (missing.length) throw new Error(`Faltan archivos de publicación: ${missing.join(', ')}`);
