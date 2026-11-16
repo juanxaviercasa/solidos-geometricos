@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./canvas-presentation.css" />
   <link rel="stylesheet" href="./navigation-responsive.css" />
   <link rel="stylesheet" href="./branding.css" />
+  <link rel="stylesheet" href="./visual-refresh.css?v=20261115" />
   <script type="importmap">
     {
       "imports": {
@@ -141,7 +142,7 @@
               <div id="controls2d" class="net-fold-controls">
                 <span class="eyebrow">PLEGADO 2D ↔ 3D</span>
                 <button id="foldPlay" class="fold-toggle" aria-label="Plegar el desarrollo"><span id="foldPlayIcon" aria-hidden="true">▶</span><span id="foldAction">Plegar</span></button>
-                <div class="fold-timeline"><div><span>Progreso</span><strong id="foldPercent">0%</strong></div><input id="foldRange" type="range" min="0" max="100" value="0" aria-label="Progreso del plegado"></div>
+          <div class="fold-timeline"><div><span>Progreso</span><strong id="foldPercent">0%</strong></div><label class="sr-only" for="foldRange">Progreso del plegado</label><input id="foldRange" type="range" min="0" max="100" value="0"></div>
               </div>
               <div class="net-export-controls"><button class="ghost-btn" data-open="workshop">Imprimir</button><button id="netFullscreenBtn" data-fullscreen class="round-btn" title="Pantalla completa" aria-label="Pantalla completa">⛶</button></div>
               <div class="net-status"><span class="eyebrow">ESTADO</span><p id="foldStatus" class="fold-status" role="status">Red completamente plana</p></div>

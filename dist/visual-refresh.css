@@ -1,0 +1,85 @@
+/*
+ * Sólidos geométricos · pase visual 2026-11-15
+ * Capa de presentación: no modifica geometría, cálculos ni eventos.
+ */
+:root{
+  --zenit-ink:#18213a;
+  --zenit-violet:#6256e8;
+  --zenit-violet-deep:#4638be;
+  --zenit-lime:#c9f34a;
+  --zenit-coral:#ff7668;
+  --zenit-blue:#56b8ee;
+  --zenit-shadow:0 22px 70px rgba(39,35,92,.14);
+}
+
+body{background:radial-gradient(circle at 10% 0%,#fff 0,#f5f5ef 42%,#eef0f5 100%)}
+.site-header{background:rgba(255,255,255,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(98,86,232,.14);box-shadow:0 7px 24px rgba(31,39,48,.06)}
+.site-header .brand-symbol{color:var(--zenit-violet)}
+.site-header .module-navigation a{position:relative;transition:color .18s,background .18s,transform .18s}
+.site-header .module-navigation a:hover{background:var(--violet-soft);color:var(--zenit-violet-deep);transform:translateY(-1px)}
+.site-header .module-navigation a[aria-current="page"]{background:var(--zenit-ink);color:#fff}
+.site-resources summary{background:var(--paper);transition:border-color .18s,box-shadow .18s}
+.site-resources summary:hover{border-color:var(--zenit-violet);box-shadow:0 5px 18px rgba(98,86,232,.12)}
+
+/* Portada: más carácter editorial y una invitación más clara a explorar. */
+.solids-home .solids-hero{border-color:#d9d5ff;box-shadow:var(--zenit-shadow);background:linear-gradient(120deg,#fff 0%,#fff 56%,#eeeaff 100%)}
+.home-hero-copy{position:relative}
+.home-hero-copy:before{content:'01';position:absolute;right:clamp(20px,3vw,45px);top:18px;color:#e6e2ff;font:800 72px/1 'DM Mono',monospace;letter-spacing:-8px;pointer-events:none}
+.home-hero-heading h1{position:relative;font-weight:800;color:var(--zenit-ink)}
+.home-hero-heading h1 em{color:var(--zenit-violet-deep);text-decoration:underline;text-decoration-color:var(--zenit-lime);text-decoration-thickness:7px;text-underline-offset:8px}
+.home-primary{background:linear-gradient(135deg,var(--zenit-violet),var(--zenit-violet-deep));box-shadow:0 12px 24px rgba(70,56,190,.24);transition:transform .18s,box-shadow .18s}
+.home-primary:hover{transform:translateY(-2px);box-shadow:0 16px 30px rgba(70,56,190,.3)}
+.home-hero-art{background:linear-gradient(145deg,#dcd4f5,#c1dbec)}
+.home-hero-art figcaption{background:rgba(255,255,255,.68);backdrop-filter:blur(8px)}
+.solids-home .solid-module{border-color:#e1e0ea;transition:transform .2s,box-shadow .2s,border-color .2s}
+.solids-home .solid-module:hover{transform:translateY(-5px);border-color:#bdb6ff;box-shadow:0 18px 38px rgba(70,56,190,.15)}
+.solids-home .solid-module strong{color:var(--zenit-violet-deep)}
+.solids-home .solid-classification{border-color:#d7d3ff;background:linear-gradient(135deg,#fff,#f4f2ff)}
+
+/* Laboratorio: separar claramente el escenario manipulable de los datos. */
+.stage{border-color:#c9c5ef;box-shadow:var(--zenit-shadow);background:linear-gradient(145deg,#fbfbff,#f0f0fa)!important}
+.stage-banner{background:linear-gradient(90deg,rgba(255,255,255,.9),rgba(241,239,255,.7));border-bottom:1px solid rgba(98,86,232,.12);padding-bottom:14px}
+.stage-kicker{color:var(--zenit-violet-deep)}
+.stage h1{color:var(--zenit-ink)}
+#view3d,#view2d{padding:18px;background:linear-gradient(145deg,#f3f4fb,#e9ebf5)}
+#solidViewport,.fold-stage{border:1px solid rgba(70,56,190,.16);border-radius:18px;background:radial-gradient(circle at 48% 42%,#ffffff 0%,#f2f1ff 52%,#e5e8f4 100%);box-shadow:inset 0 0 45px rgba(98,86,232,.08)}
+.solid-sidebar{background:rgba(255,255,255,.88);border-color:#d7d3ff;box-shadow:0 12px 26px rgba(44,42,100,.08);backdrop-filter:blur(10px)}
+.solid-controls .round-btn{background:var(--zenit-ink);border:0;color:#fff;box-shadow:0 5px 12px rgba(24,33,58,.15);transition:transform .16s,background .16s}
+.solid-controls .round-btn:hover{background:var(--zenit-violet);transform:translateY(-2px)}
+.solid-sidebar .edge-callout{background:#fff4d7;border-color:#f3d58a;color:#674400}
+.geometry-insights button{background:rgba(255,255,255,.82);border-color:#deddec;transition:transform .16s,border-color .16s,background .16s}
+.geometry-insights button:hover{transform:translateX(2px);border-color:#aaa1ff;background:#f7f5ff}
+.geometry-insights button.active{background:linear-gradient(135deg,#efedff,#fff);border-color:var(--zenit-violet);box-shadow:0 5px 14px rgba(98,86,232,.12)}
+.panel-toggle,.ghost-btn,.round-btn{transition:transform .16s,box-shadow .16s,border-color .16s}
+.panel-toggle:hover,.ghost-btn:hover{border-color:var(--zenit-violet);box-shadow:0 5px 14px rgba(98,86,232,.12);transform:translateY(-1px)}
+.view-switch{box-shadow:0 4px 12px rgba(31,39,48,.08)}
+.view-switch button.active{background:var(--zenit-ink)}
+.dimension-chip{box-shadow:0 5px 14px rgba(39,55,10,.15)}
+
+/* Ficha: convertir los datos en bloques escaneables. */
+.inspector{border-color:#d9d6ee;box-shadow:0 14px 35px rgba(39,35,92,.08)}
+.inspector-title .mini-glyph{background:linear-gradient(135deg,var(--zenit-ink),var(--zenit-violet-deep));box-shadow:0 8px 18px rgba(70,56,190,.22)}
+.metrics div{background:linear-gradient(145deg,#fff,#f6f5ff);border-color:#dfdcf1}
+.metrics strong{color:var(--zenit-ink)}
+.euler-card{background:linear-gradient(145deg,#fff,#f8f7ff);border-color:#d9d5ff}
+.proof-bar{box-shadow:inset 3px 0 var(--teal)}
+.learning-link{background:linear-gradient(145deg,#fff,#f7f6ff);transition:transform .18s,box-shadow .18s,border-color .18s}
+.learning-link:hover,.learning-link:focus-visible{transform:translateY(-2px);box-shadow:0 10px 22px rgba(98,86,232,.12)}
+.quick-check{background:linear-gradient(135deg,#eeecff,#f8fff0);box-shadow:inset 4px 0 var(--zenit-violet)}
+
+/* Foco y accesibilidad visual. */
+:where(button,a,input,select,summary):focus-visible{outline:3px solid var(--zenit-coral);outline-offset:3px}
+button:disabled{filter:saturate(.5)}
+@media(max-width:720px){
+  .stage-banner{padding-bottom:11px}
+  #view3d,#view2d{padding:10px}
+  #solidViewport,.fold-stage{border-radius:14px;min-height:0}
+  .home-hero-copy:before{font-size:54px;right:18px;top:12px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+body.dark{background:#10141c}
+body.dark .site-header{background:rgba(25,30,38,.9);border-color:#34304e}
+body.dark .stage{background:linear-gradient(145deg,#202533,#171b25)!important}
+body.dark #view3d,body.dark #view2d{background:linear-gradient(145deg,#1d2330,#171b25)}
+body.dark #solidViewport,body.dark .fold-stage{background:radial-gradient(circle at 48% 42%,#30364b 0%,#202536 58%,#171b25 100%)}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
